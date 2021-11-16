@@ -4,7 +4,7 @@ import sched, time
 PORT = "COM5" 
 DEVICE_NAME = "BEE_2"
 BAUD_RATE = 9600
-DELAY_SEND = 1 # seconds in float
+DELAY_SEND = 0.01 # seconds in float
 
 
 DATA_TO_SEND = DEVICE_NAME+" sending something dummy payload"

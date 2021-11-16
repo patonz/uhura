@@ -3,16 +3,22 @@ from digi.xbee.devices import XBeeDevice
 import sched, time, sys, os
 
 load_dotenv()
-print()
-PORT = os.environ.get('PORT') 
+print(sys.argv[1])
+PORT = os.environ.get('PORT')
 DEVICE_NAME = os.environ.get('DEVICE_ID')
 BAUD_RATE = os.environ.get('BAUD_RATE')
 DELAY_SEND = os.environ.get('DELAY_SEND') #seconds in float
+if os.environ.get('PORT') is None:
+    print("%s env not found");
+    exit(1)
+    
+ 
 
 
 
 
-DATA_TO_SEND = DEVICE_NAME+" sending something dummy payload"
+
+DATA_TO_SEND = "%a sending something dummy payload" % (DEVICE_NAME)
 schedule = sched.scheduler(time.time, time.sleep)
 device = XBeeDevice(PORT, BAUD_RATE)
 
