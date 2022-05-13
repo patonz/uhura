@@ -1,0 +1,13 @@
+<launch>
+  <arg name="HOST_NAME" default="uav0" />
+  <arg name="RUN_TYPE" default="real" />
+  <group ns="$(arg HOST_NAME)">
+    <node pkg="uhura_device_adapter_blemesh" name="uhura_blemesh_node" type="uhura.js" output="screen">
+      <param name="HOST_NAME" type="string" value="$(arg HOST_NAME)" />
+      <param name="RUN_TYPE" type="string" value="$(arg RUN_TYPE)" />
+      <param name="baudrate" type="int" value="115200" />
+      <param name="debug_mode" type="bool" value="true" />
+      <param name="port" type="string" value="/dev/uhura_BLE_NRF_DEVICE_0"/>
+    </node>
+  </group>
+</launch> 

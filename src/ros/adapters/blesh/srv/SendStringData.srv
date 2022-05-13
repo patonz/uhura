@@ -1,0 +1,7 @@
+uint8 type
+string source
+uint32 data_length
+string data
+uint8 priority
+---
+bool success

@@ -1,0 +1,2 @@
+SUBSYSTEM=="tty", DRIVERS=="usb", ACTION=="add", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", SYMLINK+="uhura_XBEE_DEVICE_%n"
+SUBSYSTEM=="tty" DRIVERS=="usb", ACTION=="add", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="uhura_BLE_ESP_DEVICE_%n"

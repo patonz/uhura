@@ -1,0 +1,1 @@
+SUBSYSTEM=="tty", ACTION=="add", ATTRS{idVendor}=="1366", ATTRS{idProduct}=="1015", SYMLINK+="uhura_BLE_NRF_DEVICE_%n"

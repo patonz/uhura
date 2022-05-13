@@ -1,0 +1,6 @@
+int64 n_packets
+float64 delay
+int64 n_bytes
+bool to_mesh
+---
+bool started
