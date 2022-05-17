@@ -1,0 +1,22 @@
+version: "2"
+volumes:
+  dbus:
+services:
+  dbus-session:
+    image: balenablocks/dbus
+    environment:
+      DBUS_ADDRESS: unix:path=/run/dbus/session.sock
+    volumes:
+      - dbus:/run/dbus
+  talker:
+    build: ./talker
+    volumes:
+      - dbus:/run/dbus
+    environment:
+      DBUS_SESSION_BUS_ADDRESS: unix:path=/run/dbus/session.sock
+  listener:
+    build: ./listener
+    volumes:
+      - dbus:/run/dbus
+    environment:
+      DBUS_SESSION_BUS_ADDRESS: unix:path=/run/dbus/session.sock
