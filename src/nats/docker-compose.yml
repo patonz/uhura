@@ -1,0 +1,12 @@
+version: "2"
+services:
+  nats:
+    image: nats
+    ports:
+      - "8222:8222"
+    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --http_port 8222 "
+  clientjs:
+    build: ./client
+    network_mode: host
+    command: "tail -f /dev/null"
+

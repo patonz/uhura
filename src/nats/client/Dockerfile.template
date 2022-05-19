@@ -1,0 +1,7 @@
+FROM balenalib/raspberrypi4-64-ubuntu-node
+
+WORKDIR /app
+RUN install_packages g++
+
+COPY . .
+RUN npm install
