@@ -1,2 +1,0 @@
-digi-xbee
-python-dotenv
