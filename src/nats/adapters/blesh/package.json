@@ -7,5 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "patonz",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@patonz/uhura_device_adapter_blesh": "file:../../../lib/adapters/blesh"
+  }
 }

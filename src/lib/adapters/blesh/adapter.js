@@ -12,18 +12,20 @@ class BleshAdapter {
     port = "/dev/ttyACM0"; // default port without udev rule. otherwise is /dev/uhura_BLE_NRF_DEVICE_0
     droneAddress = undefined;
     testStarted = false;
-    linkTable = new LinkTable();
+    linkTable = new LinkTable(20);
     eventEmitter = new events.EventEmitter();
+
     /**
      * 
      * @param {port like '/dev/ttyACM0'} paramPort 
      * @param {blesh name, or machine host name} paramHostName 
      */
-    constructor(paramPort, paramHostName) {
-        this.start(paramPort, paramHostName);
+    constructor(paramPort, paramHostName, cadence) {
+        this.start(paramPort, paramHostName, cadence);
+
     }
 
-    start(paramPort, paramHostName) {
+    start(paramPort, paramHostName, cadence) {
         this.log.info("uhura device adapter blesh starting up");
 
         if (paramPort) {
@@ -43,14 +45,20 @@ class BleshAdapter {
             this.handleDataReceived(data, messageInfo); // register the handle fun for incoming messages
         });
 
+        /**
+         * heartbit
+         */
 
+        if(cadence == undefined)
+            cadence = 2000;
         setTimeout(() => {
             setInterval(() => {
-                BleDevice.sendMessage(`heartbit:${this.hostName}`, (toLog) => {
+                this.linkTable.updateAll();
+                BleDevice.sendUnicastMessage(`HB:${this.hostName} ${cadence}`, (toLog) => {
                     this.log.debug(toLog);
                     ToolManager.logToFile(toLog, this.hostName);
-                })
-            }, 10000); /**@TODO params from uhura-core*/
+                }, "0x0036")
+            }, cadence); /**@TODO params from uhura-core*/
         }, 2000); /**@TODO params from uhura-core*/
 
     }
@@ -59,7 +67,7 @@ class BleshAdapter {
         this.log.info(messageInfo);
         this.log.debug(data);
 
-        if (data.includes('heartbit:uav')) {
+        if (data.includes('HB:uav')) {
             this.droneAddress = messageInfo.split(" ")[2].replace('<', '').replace('>', '');
 
         }
@@ -84,8 +92,9 @@ class BleshAdapter {
 
         }
 
-        if(data.includes('heartbit:')){
-
+        if(data.includes('HB:')){
+            let cadence = data.split(' ')[1];
+            messageInfo.cadence = cadence;
             this.linkTable.addFrame(messageInfo.sender, messageInfo);
         }
 

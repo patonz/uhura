@@ -16,7 +16,7 @@
   "author": "patonz",
   "license": "ISC",
   "dependencies": {
-    "@patonz/bleshjs": "0.0.3",
+    "@patonz/bleshjs": "0.0.4",
     "luxon": "^2.4.0"
   }
 }
