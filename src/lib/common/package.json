@@ -1,0 +1,16 @@
+{
+  "name": "uhura_toolmanager",
+  "version": "0.0.1",
+  "description": "uhura toolManager",
+  "main": "toolManager.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "patonz",
+  "license": "ISC",
+  "dependencies": {
+    "danfojs-node": "^1.1.1",
+    "luxon": "^2.4.0",
+    "winston": "^3.7.2"
+  }
+}
