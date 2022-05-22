@@ -20,12 +20,12 @@ class BleshAdapter {
      * @param {port like '/dev/ttyACM0'} paramPort 
      * @param {blesh name, or machine host name} paramHostName 
      */
-    constructor(paramPort, paramHostName, cadence) {
-        this.start(paramPort, paramHostName, cadence);
+    constructor(paramPort, paramHostName, cadence, remoteHost) {
+        this.start(paramPort, paramHostName, cadence, remoteHost);
 
     }
 
-    start(paramPort, paramHostName, cadence) {
+    start(paramPort, paramHostName, cadence, remoteHost) {
         this.log.info("uhura device adapter blesh starting up");
 
         if (paramPort) {
@@ -41,23 +41,34 @@ class BleshAdapter {
         BleDevice.prefix_logger = this.hostName; // will create the file log as <hostName>_<timestamp>.txt
         BleDevice.connect(this.port); // No automatic System implemented, usually is /dev/uhura_BLE_NRF_DEVICE_0 if udev are loaded correctly
         BleDevice.printUnfilteredData = false
-        BleDevice.onReceiveMessage((data, messageInfo) => {
-            this.handleDataReceived(data, messageInfo); // register the handle fun for incoming messages
+        BleDevice.onReceiveMessage((data, messageInfo, toLog) => {
+            this.handleDataReceived(data, messageInfo, toLog); // register the handle fun for incoming messages
         });
 
         /**
-         * heartbit
+         * heartbeat
          */
 
-        if(cadence == undefined)
+        if (cadence === undefined) {
             cadence = 2000;
+        }
+
         setTimeout(() => {
             setInterval(() => {
                 this.linkTable.updateAll();
-                BleDevice.sendUnicastMessage(`HB:${this.hostName} ${cadence}`, (toLog) => {
-                    this.log.debug(toLog);
-                    ToolManager.logToFile(toLog, this.hostName);
-                }, "0x0036")
+
+                if (remoteHost !== undefined) {// check if the heartbeat should go on remote host only.
+                    BleDevice.sendUnicastMessage(`HB:${this.hostName} ${cadence}`, (toLog) => {
+                        this.log.debug(toLog);
+                        ToolManager.logToFile(toLog, this.hostName);
+                    }, remoteHost)
+                } else {
+                    BleDevice.sendMessage(`HB:${this.hostName} ${cadence}`, (toLog) => {
+                        this.log.debug(toLog);
+                        ToolManager.logToFile(toLog, this.hostName);
+                    });
+                }
+
             }, cadence); /**@TODO params from uhura-core*/
         }, 2000); /**@TODO params from uhura-core*/
 
@@ -92,7 +103,7 @@ class BleshAdapter {
 
         }
 
-        if(data.includes('HB:')){
+        if (data.includes('HB:')) {
             let cadence = data.split(' ')[1];
             messageInfo.cadence = cadence;
             this.linkTable.addFrame(messageInfo.sender, messageInfo);

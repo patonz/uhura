@@ -1,5 +1,5 @@
-const dfd = require("danfojs-node");
-const { DataFrame } = require("danfojs-node/dist/danfojs-base");
+const dfd = require("danfojs");
+const { DataFrame } = require("danfojs/dist/danfojs-base");
 const { DateTime } = require("luxon");
 class LinkTable {
 
