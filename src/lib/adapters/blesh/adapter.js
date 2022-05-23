@@ -12,19 +12,31 @@ class BleshAdapter {
     port = "/dev/ttyACM0"; // default port without udev rule. otherwise is /dev/uhura_BLE_NRF_DEVICE_0
     droneAddress = undefined;
     testStarted = false;
-    linkTable = new LinkTable(20);
+    linkTable = undefined
     eventEmitter = new events.EventEmitter();
 
     /**
      * 
-     * @param {port like '/dev/ttyACM0'} paramPort 
-     * @param {blesh name, or machine host name} paramHostName 
+     * @param {*} paramPort "/dev/ttyACM0"
+     * @param {*} paramHostName "robot name"
+     * @param {*} cadence "heartbeat cadence"
+     * @param {*} remoteHost "address for heartbeat, default 0xFFFF"
+     * @param {*} framesForLink "default 5"
      */
-    constructor(paramPort, paramHostName, cadence, remoteHost) {
+    constructor(paramPort, paramHostName, cadence, remoteHost, framesForLink) {
+        this.linkTable = new LinkTable(framesForLink);
         this.start(paramPort, paramHostName, cadence, remoteHost);
 
     }
 
+
+    /**
+     * 
+     * @param {*} paramPort
+     * @param {*} paramHostName 
+     * @param {*} cadence 
+     * @param {*} remoteHost 
+     */
     start(paramPort, paramHostName, cadence, remoteHost) {
         this.log.info("uhura device adapter blesh starting up");
 

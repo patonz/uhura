@@ -69,7 +69,7 @@ class LinkTable {
             let condition = dataFrame["timestamp"].gt(updateTime-(this.maxFrames*cadence))
             let query = dataFrame.loc({rows: condition});
             this.link[node].pdr = (query.values.length / dataFrame.values.length ) * 100;
-            console.log(`${this.link[node].pdr}% with ${query.values.length} of ${dataFrame.values.length}`);
+            console.log(`${node}: pdr${this.link[node].pdr}% with ${query.values.length} of ${dataFrame.values.length}`);
         }
         
     }

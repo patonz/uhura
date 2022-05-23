@@ -1,4 +1,6 @@
 version: "2"
+volumes:
+    uhura-volume:
 services:
   nats:
     image: nats
@@ -11,8 +13,10 @@ services:
   #  command: "tail -f /dev/null"
   uhura:
     build: 
-      dockerfile: test.Dockerfile.template
+      dockerfile: test.Dockerfile
       context: .
+    volumes:
+      - 'uhura-volume:/data'
     network_mode: host
     privileged: true
     command: "tail -f /dev/null"

@@ -3,7 +3,7 @@ const luxon = require("luxon");
 const { createLogger, format, transports, addColors } = require("winston");
 
 class ToolManager {
-  dir = "uhura_log/ble_mesh";
+  dir = "/data/uhura_log/ble_mesh";
 
   logTag = undefined;
 
@@ -51,7 +51,7 @@ class ToolManager {
       default_prefix = prefix
     }
     fs.writeFile(
-      `uhura_log/ble_mesh/${default_prefix}_${this.start_timestamp}.txt`,
+      `${this.dir}/${default_prefix}_${this.start_timestamp}.txt`,
       msg + `\n`,
       { flag: "a+" },
       (err) => {
