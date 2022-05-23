@@ -19,6 +19,7 @@ services:
       - 'uhura-volume:/data'
     network_mode: host
     privileged: true
-    command: "tail -f /dev/null"
+    #command: "tail -f /dev/null"
+    command: node test.js
     
 

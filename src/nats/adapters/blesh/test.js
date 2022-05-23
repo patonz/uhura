@@ -3,6 +3,7 @@ let port = process.env.DEVICE_PORT;
 let remoteAddress = process.env.REMOTE_ADDRESS;
 let hostname = process.env.HOSTNAME;
 let heartbeatFrequency = process.env.HEARTBEAT_FREQUENCY
+let framesForLink = process.env.FRAMES_FOR_LINK
 
 if(port === undefined){
     port = '/dev/ttyACM0'
@@ -18,10 +19,14 @@ if(hostname === undefined){
 }
 
 if(heartbeatFrequency === undefined){
-    heartbeatFrequency = process.env.heartbeat_FREQUENCY
+    heartbeatFrequency = 2000
 }
 
-let bleshAdapter = new BleshAdapter(port, hostname, heartbeatFrequency, remoteAddress);
+if(framesForLink === undefined){
+    framesForLink = 50
+}
+
+let bleshAdapter = new BleshAdapter(port, hostname, heartbeatFrequency, remoteAddress,framesForLink);
 bleshAdapter.eventEmitter.on('message_received', (message)=>{
     console.log('[message received]'+ JSON.stringify(message));
 })
