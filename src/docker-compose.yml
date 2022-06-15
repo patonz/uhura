@@ -1,6 +1,7 @@
 version: "2"
 volumes:
     uhura-volume:
+    fastdds-volume:
 services:
   nats:
     image: nats
@@ -21,5 +22,16 @@ services:
     privileged: true
     #command: "tail -f /dev/null"
     command: node test.js
+
+  fastdds:
+    build: 
+      dockerfile: fastdds.Dockerfile
+      context: .
+    volumes:
+      - 'fastdds-volume:/dev'
+    network_mode: host
+    privileged: true
+    command: "tail -f /dev/null"
+    #command: node test.js
     
 
