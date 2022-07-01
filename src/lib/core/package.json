@@ -1,6 +1,7 @@
 {
   "name": "uhura_core",
   "version": "0.0.1",
+  "type": "module",
   "description": "uhura core nodejs lib",
   "main": "index.js",
   "scripts": {

@@ -1,12 +1,11 @@
-import router from "./router";
-class Core {
+class UhuraCore {
 
     constructor() {
 
     }
 
     sendMessage(msg) {
-
+        console.log(`message sent ${msg}`)
     }
 
     receiveMessageCallback() {
@@ -32,4 +31,4 @@ class Core {
 
 }
 
-module.exports = new Core();
+module.exports = new UhuraCore;
