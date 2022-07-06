@@ -1,9 +1,9 @@
-import UhuraCore from "uhura_core"
+import UhuraCore from "uhura_core";
 import {
     connect, StringCodec
 } from "nats";
 import protobuf from 'protobufjs';
-
+const stringCodec = StringCodec();
 const nc = await connect({ servers: "demo.nats.io:4222", encoding: 'binary' });
 
 let Test = undefined;
@@ -31,9 +31,12 @@ const sub = nc.subscribe("sendMessage");
 (async () => {
     for await (const m of sub) {
 
-        console.log(m.data);
-        UhuraCore.sendMessage(m.data);
+        console.log(stringCodec.decode( m.data));
+        UhuraCore.sendMessage(stringCodec.decode( m.data));
        // console.log(`[${sub.getProcessed()}]: ${JSON.stringify(Test.decode(m.data))}`);
     }
     console.log("subscription closed");
 })();
+
+setInterval(() => {}, 1 << 30);
+console.log("Uhura Core started")
