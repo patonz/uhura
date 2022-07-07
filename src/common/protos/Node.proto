@@ -1,0 +1,7 @@
+syntax = "proto3";
+package uhura;
+
+message Node {
+    required string id = 1;
+    string adapter_id = 2;
+}

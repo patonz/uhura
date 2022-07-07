@@ -3,24 +3,53 @@ import {
     connect, StringCodec
 } from "nats";
 import protobuf from 'protobufjs';
+import  fs from 'fs';
 const stringCodec = StringCodec();
-const nc = await connect({ servers: "demo.nats.io:4222", encoding: 'binary' });
+const nc = await connect({ servers: "0.0.0.0:4222", encoding: 'binary' });
 
-let Test = undefined;
-await protobuf.load("../protos/test.proto").then((root) => {
-    Test = root.lookupType("testpackage.Test");
+
+const protoFolder = '../../common/protos/';
+
+
+let protoList = [];
+
+
+fs.readdirSync(protoFolder).forEach(file => {
+  protoList.push(`${protoFolder}${file}`);
+});
+
+
+let Message;
+let Node;
+let SendMessageRequest;
+
+
+await protobuf.load(protoList).then((root) => {
+    Message = root.lookupType("uhura.Message");
+    Node = root.lookupType('uhura.Node');
+    SendMessageRequest = root.lookupType('uhura.SendMessageRequest');
 })
 
+let message_payload = { text : "test non funziona un cazzo" };
 
-
-let payload = { payload: "ciao mamma", num: 77 };
-let errMsg = Test.verify(payload);
+let errMsg = Message.verify(message_payload);
 
 if (errMsg) {
     throw Error(errMsg)
 }
-let message = Test.create(payload)
-let buffer = Test.encode(message).finish();
+let send_message_payload = { message: message_payload }
+console.log(send_message_payload);
+
+
+errMsg = SendMessageRequest.verify(send_message_payload);
+
+if (errMsg) {
+    throw Error(errMsg)
+}
+
+
+let sendMessageReuquestTest = SendMessageRequest.create(send_message_payload)
+let buffer = SendMessageRequest.encode(sendMessageReuquestTest).finish();
 
 
 // create a codec
@@ -31,12 +60,24 @@ const sub = nc.subscribe("sendMessage");
 (async () => {
     for await (const m of sub) {
 
-        console.log(stringCodec.decode( m.data));
-        UhuraCore.sendMessage(stringCodec.decode( m.data));
-       // console.log(`[${sub.getProcessed()}]: ${JSON.stringify(Test.decode(m.data))}`);
+      //  console.log(stringCodec.decode( m.data));
+        UhuraCore.sendMessage(JSON.stringify(SendMessageRequest.decode(m.data)));
+        console.log(`[${sub.getProcessed()}]: ${JSON.stringify(SendMessageRequest.decode(m.data))}`);
     }
     console.log("subscription closed");
 })();
+
+// on receive message
+
+setInterval(() => {
+    nc.publish("receivedMessage", buffer)
+}, 2000);
+
+
+
+
+
+nc.publish("sendMessage", buffer);
 
 setInterval(() => {}, 1 << 30);
 console.log("Uhura Core started")

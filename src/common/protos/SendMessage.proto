@@ -1,0 +1,12 @@
+syntax = "proto3";
+package uhura;
+
+import "./Message.proto";
+import "Node.proto";
+
+message SendMessageRequest {
+    Message message = 1;
+    int32 priority = 2;
+    Node sender = 3;
+    repeated Node receivers = 4;
+}
