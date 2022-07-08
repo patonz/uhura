@@ -7,31 +7,22 @@ services:
     image: nats
     ports:
       - "8222:8222"
+      - "4222:4222"
     command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --http_port 8222 "
+    #network_mode: host
   #clientjs:
   #  build: ./client
   #  network_mode: host
   #  command: "tail -f /dev/null"
-  uhura:
-    build: 
-      dockerfile: test.Dockerfile
-      context: .
-    volumes:
-      - 'uhura-volume:/data'
-    network_mode: host
-    privileged: true
-    #command: "tail -f /dev/null"
-    command: node test.js
-
-  fastdds:
-    build: 
-      dockerfile: fastdds.Dockerfile
-      context: .
-    volumes:
-      - 'fastdds-volume:/dev'
-    network_mode: host
-    privileged: true
-    command: "tail -f /dev/null"
-    #command: node test.js
+  #uhura:
+  #  build: 
+  #    dockerfile: test.Dockerfile
+  #    context: .
+  #  volumes:
+  #    - 'uhura-volume:/data'
+  #  network_mode: host
+  #  privileged: true
+  #  #command: "tail -f /dev/null"
+  #  command: node test.js
     
 

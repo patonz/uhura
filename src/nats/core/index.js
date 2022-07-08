@@ -5,11 +5,9 @@ import {
 import protobuf from 'protobufjs';
 import  fs from 'fs';
 const stringCodec = StringCodec();
-const nc = await connect({ servers: "0.0.0.0:4222", encoding: 'binary' });
-
+const nc = await connect({ servers: "nats://0.0.0.0:4222", encoding: 'binary' });
 
 const protoFolder = '../../common/protos/';
-
 
 let protoList = [];
 
@@ -62,6 +60,7 @@ const sub = nc.subscribe("sendMessage");
 
       //  console.log(stringCodec.decode( m.data));
         UhuraCore.sendMessage(JSON.stringify(SendMessageRequest.decode(m.data)));
+        console.log(SendMessageRequest.toObject(SendMessageRequest.decode(m.data)));
         console.log(`[${sub.getProcessed()}]: ${JSON.stringify(SendMessageRequest.decode(m.data))}`);
     }
     console.log("subscription closed");
