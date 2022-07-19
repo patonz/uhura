@@ -1,5 +1,5 @@
 const events = require("events");
-const IpsDevice = require("@patonz/ipseshjs/script/index")
+const IpsDevice = require("@patonz/ipseshjs/script/index");
 const ToolManager = require("../../common/toolManager");
 const LinkTable = require("../../common/linkTable");
 
@@ -8,33 +8,46 @@ const LinkTable = require("../../common/linkTable");
  */
 class IpseshAdapter {
   log = ToolManager.getLogger("IPSESH_ADAPTER");
-  local_ip = "0.0.0.0";
-  local_port = "2222"; // spawn a default port @TODO
-
-  broadcast_ip = IpsDevice.broadcastIp; // let ipsesh to find it
-
-  interface = undefined; // wlan0 for example
-
-  linkTable = undefined;
+  local_ip //binds of socket udp
+  port // spawn a default port @TODO
+  cadence
+  broadcastIp // let ipsesh to find it
+  hostName
+  interface // wlan0 for example
+  framesForLink
+  linkTable
   eventEmitter = new events.EventEmitter();
+
+  opt(options, name, defaultValue) {
+    return options && options[name] !== undefined
+      ? options[name]
+      : defaultValue;
+  }
 
   /**
    *
-   * @param {*} paramInterface "wlan0"
-   * @param {*} paramHostName "robot name"
-   * @param {*} cadence "heartbeat cadence"
-   * @param {*} remoteHost "address for heartbeat, default 255.255.255.255"
-   * @param {*} framesForLink "default 5"
+   * @param {*} options.interface "wlan0"
+   * @param {*} options.port "2222 as default"
+   * @param {*} options.hostName "robot name"
+   * @param {*} options.cadence "heartbeat cadence"
+   * @param {*} options.broadcastIp "address for heartbeat, default 255.255.255.255"
+   * @param {*} options.framesForLink "default 5"
    */
-  constructor(
-    paramInterface,
-    paramHostName,
-    cadence,
-    broadcast_ip,
-    framesForLink
-  ) {
-    this.linkTable = new LinkTable(framesForLink);
-    this.start(paramInterface, paramHostName, cadence, remoteHost);
+  constructor(options) {
+
+    this.interface = this.opt(options, 'interface', 'eth0');
+    this.port = this.opt(options, 'port', 2222);
+    this.hostName = this.opt(options, 'hostName', 'host');
+    this.cadence = this.opt(options, 'cadence', 2000);
+    this.broadcastIp = this.opt(options, 'broadcastIp', IpsDevice.broadcastIp);
+    this.framesForLink = this.opt(options, 'framesForLink', 5);
+
+
+
+
+    this.linkTable = new LinkTable(this.framesForLink);
+
+    this.start(this.interface, this.hostName, this.cadence);
   }
 
   /**
@@ -47,21 +60,16 @@ class IpseshAdapter {
   start(paramInterface, paramHostName, cadence, remoteHost) {
     this.log.info("uhura device adapter ipsesh starting up");
 
-    if (paramPort) {
-      this.port = paramPort;
-      this.log.info(`found port on params: ${this.port}`);
-    }
-
     if (paramHostName) {
       this.hostName = paramHostName;
       this.log.info(`found hostName on params: ${this.hostName}`);
     }
 
     // BleDevice.prefix_logger = this.hostName; // will create the file log as <hostName>_<timestamp>.txt
-    IpsDevice.connect(this.interface, this.local_port); // 0.0.0.0 and 2222 for example to bind udp4
+    IpsDevice.connect(this.interface, this.port); // 0.0.0.0 and 2222 for example to bind udp4
     //BleDevice.printUnfilteredData = false;
     IpsDevice.onReceiveMessage((msg, info) => {
-      this.handleDataReceived(data, messageInfo, toLog); // register the handle fun for incoming messages
+      this.handleDataReceived(msg, info); // register the handle fun for incoming messages
     });
 
     /**
@@ -86,8 +94,8 @@ class IpseshAdapter {
   }
 
   handleDataReceived(msg, info) {
-    this.log.info(msg);
-    this.log.debug(info);
+    this.log.info(msg.toString());
+    this.log.debug(JSON.stringify(info));
 
     this.eventEmitter.emit("message_received", msg);
     //ToolManager.logToFile(toLog, this.hostName);
