@@ -1,0 +1,10 @@
+syntax = "proto3";
+package uhura;
+
+message Device {
+    string id = 1;
+    required string name = 2;
+    required string type = 3;
+    string link_status = 4;
+
+}

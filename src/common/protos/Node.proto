@@ -3,5 +3,5 @@ package uhura;
 
 message Node {
     required string id = 1;
-    string adapter_id = 2;
+    string adapterId = 2;
 }

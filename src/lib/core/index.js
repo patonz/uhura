@@ -16,24 +16,28 @@ class UhuraCore {
     }
 
     getDeviceList() {
-
+      return DevicesRegistry.device_list;
     }
 
-    getLinkStatus() {
-
+    getLinkStatus(device_id) {
+        /**@TODO */
     }
 
-    registerDevice(device) {
+    registerDevice(deviceObj) {
+        let device = Object.assign(new Device, deviceObj)
         if(device instanceof Device){
-            DevicesRegistry.registerDevice(device);
+            return DevicesRegistry.registerDevice(device);
+            
         } else {
             console.error("register device error: input must be a Device instance")
         }
+
+        
         
     }
 
     unregisterDevice(uhura_device_id) {
-
+        /**@TODO */
     }
 
 
