@@ -21,7 +21,11 @@ fs.readdirSync(protoFolder).forEach(file => {
  * multiple uhure cores can run on the same machine, but an adapter can only be assigned to a single one.
  * all cores shares the same topics, but they will start with a different name in order to separate them.
  */
-const core_id = "AlphaCore"
+let core_id = "AlphaCore";
+if(process.env.ID){
+    core_id = process.env.ID;
+}
+
 
 let device;
 let Message;
@@ -42,7 +46,7 @@ setTimeout(async () => {
     console.log("requesting registration to core")
     const deviceProtoObj = DeviceProto.create(deviceObj) // creating a protobuffObj
     const r = await nc.request(`${core_id}.registerAdapter`, DeviceProto.encode(deviceProtoObj).finish()); // encoding the proto, then performing a request to a topic
-    // "awiting" the reply data
+    // "awaiting" the reply data
     let registeredDevice = DeviceProto.toObject(DeviceProto.decode(r.data)) // decoding the reply data
     device = registeredDevice; //assing to this adapter some extra information cames from the core
     console.log(registeredDevice) // debug print
@@ -62,26 +66,14 @@ const subAdaptersNetwork = nc.subscribe('adaptersNetwork');
 (async () => {
     for await (const m of subAdaptersNetwork) {
 
-        const dataObj =SendMessageRequest.toObject(SendMessageRequest.decode(m.data))
-        if(dataObj.sender.id !== core_id){
+        const dataObj = SendMessageRequest.toObject(SendMessageRequest.decode(m.data))
+        if (dataObj.sender.id !== core_id) {
             console.log(`rcv from network ${JSON.stringify(dataObj)}`);
             nc.publish(`${core_id}.receivedMessageAdapter`, m.data);
         }
-
-
     }
     console.log("subscription closed");
 })();
-
-
-
-
-
-
-
-
-
-
 
 
 setInterval(() => { }, 1 << 30);

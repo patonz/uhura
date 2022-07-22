@@ -17,7 +17,11 @@ fs.readdirSync(protoFolder).forEach(file => {
 });
 
 
-const id = "AlphaCore";
+let id = "AlphaCore";
+if(process.env.ID){
+    id = process.env.ID;
+}
+
 
 let Message;
 let Node;
@@ -32,7 +36,7 @@ await protobuf.load(protoList).then((root) => {
     DeviceProto = root.lookupType('uhura.Device');
 })
 
-let message_payload = { text: "test non funziona un cazzo" };
+let message_payload = { text: "test test", type: 0 };
 
 let errMsg = Message.verify(message_payload);
 
@@ -74,6 +78,43 @@ const subSendMessage = nc.subscribe(`${id}.sendMessage`);
     console.log("subscription closed");
 })();
 
+const subSendMessageText = nc.subscribe(`${id}.sendMessage.text`);
+(async () => {
+    for await (const m of subSendMessageText) {
+        console.log(`[${subSendMessageText.getSubject()}]: ${stringCodec.decode(m.data)}`);
+        let request = {
+            message: { text: stringCodec.decode(m.data), type: 0 },
+            priority: 0,
+            sender: { id: id}
+        }
+        if (UhuraCore.getDeviceList().length > 0) {
+            request.sender.adapter_id = UhuraCore.getDeviceList()[0]
+            nc.publish(`${id}.${UhuraCore.getDeviceList()[0].id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
+        }
+
+    }
+    console.log("subscription closed");
+})();
+
+const subSendMessageBinary = nc.subscribe(`${id}.sendMessage.binary`);
+(async () => {
+    for await (const m of subSendMessageBinary) {
+        console.log(`[${subSendMessageBinary.getSubject()}]: ${(m.data)}`);
+        let request = {
+            message: { binary: m.data, type: 0 },
+            priority: 0,
+            sender: { id: id}
+        }
+        if (UhuraCore.getDeviceList().length > 0) {
+            request.sender.adapter_id = UhuraCore.getDeviceList()[0]
+            nc.publish(`${id}.${UhuraCore.getDeviceList()[0].id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
+        }
+
+    }
+    console.log("subscription closed");
+})();
+
+
 
 const subRegisterAdapter = nc.subscribe(`${id}.registerAdapter`, {
     callback: (_err, msg) => {
@@ -100,6 +141,16 @@ const subReceivedMessage = nc.subscribe(`${id}.receivedMessageAdapter`);
        
         const request = (SendMessageRequest.toObject(SendMessageRequest.decode(m.data)));
         console.log(`received a message ${JSON.stringify(request)}`);
+        if(request.message.type == 0 || request.message.type == 1){
+            if(request.message.text){
+                nc.publish(`${id}.receivedMessage.text`, stringCodec.encode(request.message.text))
+            }
+    
+            if(request.message.binary){
+                nc.publish(`${id}.receivedMessage.binary`,request.message.binary)
+            }
+        }
+       
 
     }
     console.log("subscription closed");
@@ -111,7 +162,7 @@ const subReceivedMessage = nc.subscribe(`${id}.receivedMessageAdapter`);
 let counter = 0;
 setInterval(() => {
     let request = {
-        message: { text: "hb"+counter },
+        message: { text: ""+counter, type: 2 },
         priority: 0,
         sender: { id: id, adapterId: "test1234" }
     }

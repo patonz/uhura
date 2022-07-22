@@ -2,5 +2,19 @@ syntax = "proto3";
 package uhura;
 
 message Message {
-    required string text = 1;
+    oneof content {
+        string text = 1;
+        bytes binary = 2;
+    }
+    
+    required Type type =3;
+}
+
+
+enum Type {
+    UNKNOWN = 0;
+    GENERIC = 1;
+    HEARTBEAT=2;
+    ERROR=3;
+    SERVICE=4;
 }
