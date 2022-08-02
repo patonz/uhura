@@ -87,6 +87,7 @@ const subSendMessageText = nc.subscribe(`${id}.sendMessage.text`);
             priority: 0,
             sender: { id: id}
         }
+        UhuraCore.sendMessage
         if (UhuraCore.getDeviceList().length > 0) {
             request.sender.adapter_id = UhuraCore.getDeviceList()[0]
             nc.publish(`${id}.${UhuraCore.getDeviceList()[0].id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
@@ -105,6 +106,8 @@ const subSendMessageBinary = nc.subscribe(`${id}.sendMessage.binary`);
             priority: 0,
             sender: { id: id}
         }
+
+        
         if (UhuraCore.getDeviceList().length > 0) {
             request.sender.adapter_id = UhuraCore.getDeviceList()[0]
             nc.publish(`${id}.${UhuraCore.getDeviceList()[0].id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())

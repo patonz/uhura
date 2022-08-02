@@ -19,9 +19,9 @@ class UhuraMessage {
 
 // rethink
 const UhuraMessageDeliveryPolicy = {
-    AT_LEAST_ONE = 0,
-    EXACTLY_ONE = 1,
-    BEST_ADAPTER = 2
+    AT_LEAST_ONE : 0,
+    EXACTLY_ONE : 1,
+    BEST_ADAPTER : 2
 }
 
 
