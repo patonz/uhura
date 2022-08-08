@@ -87,7 +87,7 @@ const subSendMessageText = nc.subscribe(`${id}.sendMessage.text`);
             priority: 0,
             sender: { id: id}
         }
-        UhuraCore.sendMessage
+        UhuraCore.sendMessage(request)
         if (UhuraCore.getDeviceList().length > 0) {
             request.sender.adapter_id = UhuraCore.getDeviceList()[0]
             nc.publish(`${id}.${UhuraCore.getDeviceList()[0].id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
