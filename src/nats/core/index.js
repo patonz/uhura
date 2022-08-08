@@ -70,7 +70,7 @@ const subSendMessage = nc.subscribe(`${id}.sendMessage`);
         const request = (SendMessageRequest.toObject(SendMessageRequest.decode(m.data)));
 
         let adapter = UhuraCore.getAdapterByRequest(request);
-        if (adapter) {
+        if (typeof adapter === Adapter) {
             request.sender.adapterId = adapter.id
             console.log(`[${subSendMessage.getProcessed()}]: ${JSON.stringify(SendMessageRequest.decode(m.data))}`);
 
@@ -91,7 +91,7 @@ const subSendMessageText = nc.subscribe(`${id}.sendMessage.text`);
             sender: { id: id}
         }
         let adapter = UhuraCore.getAdapterByRequest(request);
-        if (adapter) {
+        if (typeof adapter === Adapter) {
             request.sender.adapterId = adapter.id
             nc.publish(`${id}.${adapter.id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
         }
@@ -111,7 +111,7 @@ const subSendMessageBinary = nc.subscribe(`${id}.sendMessage.binary`);
         }
 
         let adapter = UhuraCore.getAdapterByRequest(request);
-        if (adapter) {
+        if (typeof adapter === Adapter) {
             request.sender.adapterId = adapter.id
             nc.publish(`${id}.${adapter.id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
         }
@@ -174,7 +174,7 @@ setInterval(() => {
     }
 
     let adapter = UhuraCore.getAdapterByRequest(request);
-    if (adapter) {
+    if (typeof adapter === Adapter) {
 
         request.sender.adapterId = adapter.id
 
