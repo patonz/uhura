@@ -1,4 +1,4 @@
-class Device {
+class Adapter {
     id
     name
     type
@@ -6,4 +6,4 @@ class Device {
 
 }
 
-module.exports = Device;
+module.exports = Adapter;

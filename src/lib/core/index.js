@@ -1,5 +1,5 @@
-const Device = require("./devices_registry/device");
-const DevicesRegistry = require("./devices_registry/devicesRegistry");
+const Adapter = require("./adapters_registry/adapter");
+const AdaptersRegistry = require("./adapters_registry/adaptersRegistry");
 
 class UhuraCore {
 
@@ -15,26 +15,29 @@ class UhuraCore {
 
     }
 
-    getDeviceList() {
-        return DevicesRegistry.device_list;
+    getAdapterList() {
+        return AdaptersRegistry.adapter_list;
+    }
+    getAdapterByRequest(request){
+
     }
 
-    getLinkStatus(device_id) {
+    getLinkStatus(adapter_id) {
         /**@TODO */
     }
 
-    registerDevice(deviceObj) {
-        let device = Object.assign(new Device, deviceObj)
-        if (device instanceof Device) {
-            return DevicesRegistry.registerDevice(device);
+    registerAdapter(adapterObj) {
+        let adapter = Object.assign(new Adapter, adapterObj)
+        if (adapter instanceof Adapter) {
+            return AdaptersRegistry.registerAdapter(adapter);
 
         } else {
-            console.error("register device error: input must be a Device instance")
+            console.error("register adapter error: input must be a Adapter instance")
         }
 
     }
 
-    unregisterDevice(uhura_device_id) {
+    unregisterAdapter(adapter_id) {
         /**@TODO */
     }
 

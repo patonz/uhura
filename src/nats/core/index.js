@@ -26,14 +26,14 @@ if(process.env.ID){
 let Message;
 let Node;
 let SendMessageRequest;
-let DeviceProto;
+let Adapter;
 
 
 await protobuf.load(protoList).then((root) => {
     Message = root.lookupType("uhura.Message");
     Node = root.lookupType('uhura.Node');
     SendMessageRequest = root.lookupType('uhura.SendMessageRequest');
-    DeviceProto = root.lookupType('uhura.Device');
+    Adapter = root.lookupType('uhura.Adapter');
 })
 
 let message_payload = { text: "test test", type: 0 };
@@ -67,8 +67,10 @@ const subSendMessage = nc.subscribe(`${id}.sendMessage`);
     for await (const m of subSendMessage) {
         console.log("core.sendMessage called")
         const request = (SendMessageRequest.toObject(SendMessageRequest.decode(m.data)));
-        if (UhuraCore.getDeviceList().length > 0) {
-            request.sender.adapter_id = UhuraCore.getDeviceList()[0]
+
+        let adapter = UhuraCore.getAdapterByRequest(request);
+        if (UhuraCore.getAdapterList().length > 0) {
+            request.sender.adapter_id = UhuraCore.getAdapterList()[0]
             console.log(`[${subSendMessage.getProcessed()}]: ${JSON.stringify(SendMessageRequest.decode(m.data))}`);
 
             nc.publish(`${id}.${request.sender.adapter_id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
@@ -88,9 +90,9 @@ const subSendMessageText = nc.subscribe(`${id}.sendMessage.text`);
             sender: { id: id}
         }
         UhuraCore.sendMessage(request)
-        if (UhuraCore.getDeviceList().length > 0) {
-            request.sender.adapter_id = UhuraCore.getDeviceList()[0]
-            nc.publish(`${id}.${UhuraCore.getDeviceList()[0].id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
+        if (UhuraCore.getAdapterList().length > 0) {
+            request.sender.adapter_id = UhuraCore.getAdapterList()[0]
+            nc.publish(`${id}.${UhuraCore.getAdapterList()[0].id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
         }
 
     }
@@ -108,9 +110,9 @@ const subSendMessageBinary = nc.subscribe(`${id}.sendMessage.binary`);
         }
 
         
-        if (UhuraCore.getDeviceList().length > 0) {
-            request.sender.adapter_id = UhuraCore.getDeviceList()[0]
-            nc.publish(`${id}.${UhuraCore.getDeviceList()[0].id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
+        if (UhuraCore.getAdapterList().length > 0) {
+            request.sender.adapter_id = UhuraCore.getAdapterList()[0]
+            nc.publish(`${id}.${UhuraCore.getAdapterList()[0].id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
         }
 
     }
@@ -122,17 +124,17 @@ const subSendMessageBinary = nc.subscribe(`${id}.sendMessage.binary`);
 const subRegisterAdapter = nc.subscribe(`${id}.registerAdapter`, {
     callback: (_err, msg) => {
         console.log("received a registerAdapter request")
-        const deviceObj = DeviceProto.toObject(DeviceProto.decode(msg.data))
-        console.log(deviceObj);
+        const adapterObj = Adapter.toObject(Adapter.decode(msg.data))
+        console.log(adapterObj);
 
-        const registeredDevice = UhuraCore.registerDevice(deviceObj);
-        errMsg = DeviceProto.verify(registeredDevice);
+        const registeredAdapter = UhuraCore.registerAdapter(adapterObj);
+        errMsg = Adapter.verify(registeredAdapter);
 
         if (errMsg) {
             throw Error(errMsg)
         }
-        let created = DeviceProto.create(registeredDevice)
-        msg.respond(DeviceProto.encode(created).finish());
+        let created = Adapter.create(registeredAdapter)
+        msg.respond(Adapter.encode(created).finish());
         console.log("done")
     },
 });
@@ -169,11 +171,11 @@ setInterval(() => {
         priority: 0,
         sender: { id: id, adapterId: "test1234" }
     }
-    if (UhuraCore.getDeviceList().length > 0) {
+    if (UhuraCore.getAdapterList().length > 0) {
 
-        request.sender.adapterId = UhuraCore.getDeviceList()[0].id
+        request.sender.adapterId = UhuraCore.getAdapterList()[0].id
 
-        nc.publish(`${id}.${UhuraCore.getDeviceList()[0].id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
+        nc.publish(`${id}.${UhuraCore.getAdapterList()[0].id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
         counter++
     }
 

@@ -27,31 +27,31 @@ if(process.env.ID){
 }
 
 
-let device;
+let adapter;
 let Message;
 let Node;
 let SendMessageRequest;
-let DeviceProto;
+let Adapter;
 
 
 await protobuf.load(protoList).then((root) => {
     Message = root.lookupType("uhura.Message");
     Node = root.lookupType('uhura.Node');
     SendMessageRequest = root.lookupType('uhura.SendMessageRequest');
-    DeviceProto = root.lookupType('uhura.Device');
+    Adapter = root.lookupType('uhura.Adapter');
 })
 
 setTimeout(async () => {
-    const deviceObj = { name: "alphaAdapter", type: "nats" } // plain object
+    const adapterObj = { name: "alphaAdapter", type: "nats" } // plain object
     console.log("requesting registration to core")
-    const deviceProtoObj = DeviceProto.create(deviceObj) // creating a protobuffObj
-    const r = await nc.request(`${core_id}.registerAdapter`, DeviceProto.encode(deviceProtoObj).finish()); // encoding the proto, then performing a request to a topic
+    const adapterProtoObj = Adapter.create(adapterObj) // creating a protobuffObj
+    const r = await nc.request(`${core_id}.registerAdapter`, Adapter.encode(adapterProtoObj).finish()); // encoding the proto, then performing a request to a topic
     // "awaiting" the reply data
-    let registeredDevice = DeviceProto.toObject(DeviceProto.decode(r.data)) // decoding the reply data
-    device = registeredDevice; //assing to this adapter some extra information cames from the core
-    console.log(registeredDevice) // debug print
+    let registeredAdapter = Adapter.toObject(Adapter.decode(r.data)) // decoding the reply data
+    adapter = registeredAdapter; //assing to this adapter some extra information cames from the core
+    console.log(registeredAdapter) // debug print
 
-    const subSendMessage = nc.subscribe(`${core_id}.${device.id}.sendMessage`);
+    const subSendMessage = nc.subscribe(`${core_id}.${adapter.id}.sendMessage`);
     (async () => {
         for await (const m of subSendMessage) {
             nc.publish("adaptersNetwork", m.data)
