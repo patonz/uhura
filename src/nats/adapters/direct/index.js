@@ -42,7 +42,7 @@ await protobuf.load(protoList).then((root) => {
 })
 
 setTimeout(async () => {
-    const adapterObj = { name: "alphaAdapter", type: "nats" } // plain object
+    const adapterObj = { name: `${core_id}_adapter`, type: "nats" } // plain object
     console.log("requesting registration to core")
     const adapterProtoObj = Adapter.create(adapterObj) // creating a protobuffObj
     const r = await nc.request(`${core_id}.registerAdapter`, Adapter.encode(adapterProtoObj).finish()); // encoding the proto, then performing a request to a topic

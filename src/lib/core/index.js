@@ -19,7 +19,13 @@ class UhuraCore {
         return AdaptersRegistry.adapter_list;
     }
     getAdapterByRequest(request){
-
+        /**
+         * apply policies
+         */
+        if(AdaptersRegistry.adapter_list.length > 0){
+            return AdaptersRegistry.adapter_list[0];
+        }
+        return undefined;
     }
 
     getLinkStatus(adapter_id) {
