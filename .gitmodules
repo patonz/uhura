@@ -1,0 +1,3 @@
+[submodule "src/nats/packages/uhura-discovery"]
+	path = src/nats/packages/uhura-discovery
+	url = https://github.com/hyperloris/uhura-discovery.git
