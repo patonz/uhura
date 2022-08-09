@@ -65,7 +65,6 @@ setTimeout(async () => {
 const subAdaptersNetwork = nc.subscribe('adaptersNetwork');
 (async () => {
     for await (const m of subAdaptersNetwork) {
-
         const dataObj = SendMessageRequest.toObject(SendMessageRequest.decode(m.data))
         if (dataObj.sender.id !== core_id) {
             console.log(`rcv from network ${JSON.stringify(dataObj)}`);

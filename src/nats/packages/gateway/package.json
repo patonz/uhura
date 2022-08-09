@@ -1,0 +1,23 @@
+{
+  "name": "gateway",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:proto": "cd ./src/common/protos/ && rm generated.* && pbjs -t static-module -w commonjs -o generated.js * && pbts -o generated.d.ts generated.js",
+    "start": "tsc && node ./dist/main.js",
+    "start:examples": "tsc ./examples/*.ts && node ./examples/*.js"
+  },
+  "author": "patonz",
+  "license": "MIT",
+  "dependencies": {
+    "nats": "^2.7.1",
+    "protobufjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.6.3",
+    "protobufjs-cli": "^1.0.0",
+    "typescript": "^4.7.4"
+  }
+}

@@ -19,7 +19,7 @@ fs.readdirSync(protoFolder).forEach(file => {
 
 
 let id = "AlphaCore";
-if(process.env.ID){
+if (process.env.ID) {
     id = process.env.ID;
 }
 
@@ -88,7 +88,7 @@ const subSendMessageText = nc.subscribe(`${id}.sendMessage.text`);
         let request = {
             message: { text: stringCodec.decode(m.data), type: 0 },
             priority: 0,
-            sender: { id: id}
+            sender: { id: id }
         }
         let adapter = UhuraCore.getAdapterByRequest(request);
         if (typeof adapter === Adapter) {
@@ -107,7 +107,7 @@ const subSendMessageBinary = nc.subscribe(`${id}.sendMessage.binary`);
         let request = {
             message: { binary: m.data, type: 0 },
             priority: 0,
-            sender: { id: id}
+            sender: { id: id }
         }
 
         let adapter = UhuraCore.getAdapterByRequest(request);
@@ -144,19 +144,19 @@ const subRegisterAdapter = nc.subscribe(`${id}.registerAdapter`, {
 const subReceivedMessage = nc.subscribe(`${id}.receivedMessageAdapter`);
 (async () => {
     for await (const m of subReceivedMessage) {
-       
+
         const request = (SendMessageRequest.toObject(SendMessageRequest.decode(m.data)));
         console.log(`received a message ${JSON.stringify(request)}`);
-        if(request.message.type == 0 || request.message.type == 1){
-            if(request.message.text){
+        if (request.message.type == 0 || request.message.type == 1) {
+            if (request.message.text) {
                 nc.publish(`${id}.receivedMessage.text`, stringCodec.encode(request.message.text))
             }
-    
-            if(request.message.binary){
-                nc.publish(`${id}.receivedMessage.binary`,request.message.binary)
+
+            if (request.message.binary) {
+                nc.publish(`${id}.receivedMessage.binary`, request.message.binary)
             }
         }
-       
+
 
     }
     console.log("subscription closed");
@@ -168,7 +168,7 @@ const subReceivedMessage = nc.subscribe(`${id}.receivedMessageAdapter`);
 let counter = 0;
 setInterval(() => {
     let request = {
-        message: { text: ""+counter, type: 2 },
+        message: { text: "" + counter, type: 2 },
         priority: 0,
         sender: { id: id, adapterId: "test1234" }
     }
@@ -181,7 +181,10 @@ setInterval(() => {
         nc.publish(`${id}.${adapter.id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
         counter++
     }
-
+    const start = Date.now();
+    nc.flush().then(() => {
+        console.log("round trip completed in", Date.now() - start, "ms");
+    });
 }, 5000);
 
 setInterval(() => { }, 1 << 30);
