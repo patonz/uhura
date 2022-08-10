@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "build:proto": "cd ./src/common/protos/ && rm generated.* && pbjs -t static-module -w commonjs -o generated.js * && pbts -o generated.d.ts generated.js",
+    "build:proto": "cd ./src/common/protos/ && pbjs -t static-module -w commonjs -o generated.js * && pbts -o generated.d.ts generated.js",
     "start": "tsc && node ./dist/main.js",
     "start:examples": "tsc ./examples/*.ts && node ./examples/*.js"
   },

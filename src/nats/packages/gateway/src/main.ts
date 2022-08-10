@@ -1,19 +1,21 @@
-import { connect } from "nats";
+import { connect, Msg, Subscription } from "nats";
+import { ProcedureReq, ProcedureRes } from "./common/protos/generated"
+import { ProcedureManager } from "./procedureManager";
 
 async function bootstrap() {
-    const nc = await connect({ servers: "nats://0.0.0.0:4222" });
-    console.log(nc.stats())
+  const nc = await connect({ servers: "nats://0.0.0.0:4222" });
 
+  const uhura_core_id = "BETA";
 
+  ProcedureManager.getInstance().setNatsConnection(nc).setUhuraCoreId(uhura_core_id).setup();
+  console.log(uhura_core_id);
 
-    const uhura_core_id = "BETA";
-    const sub = nc.subscribe(`${uhura_core_id}.receivedMessage.binary`);
-    (async () => {
-        for await (const m of sub) {
-          console.log(`[${sub.getSubject()}]: ${JSON.stringify(m.data)}`);
-        }
-        console.log("subscription closed");
-      })();
 }
+
+function printMessage(subrscriber: Subscription, message: Msg) {
+  console.log(`[${subrscriber.getSubject()}]: ${JSON.stringify(message.data)}`);
+}
+
+
 
 bootstrap();

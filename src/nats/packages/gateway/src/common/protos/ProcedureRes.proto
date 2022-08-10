@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+import "src/nats/packages/uhura-discovery/src/common/protos/Service.proto";
+
+message ProcedureRes {
+    Procedure procedure = 1;
+    map<string, string> outputs = 2;
+  }

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "../../../../uhura-discovery/src/common/protos/Service.proto";
+
+message ProcedureReq {
+    string receiverUhuraId = 1;
+    string senderUhuraId = 2;
+    Procedure procedure = 3;
+    map<string, string> inputs = 4;
+  }
+  
