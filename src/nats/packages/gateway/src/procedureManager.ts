@@ -1,3 +1,4 @@
+import { Console } from "console";
 import { Msg, NatsConnection, Subscription } from "nats"
 import { ProcedureReq, ProcedureRes } from "./common/protos/generated";
 
@@ -36,70 +37,81 @@ export class ProcedureManager {
         const procedureTypes = [ProcedureReq, ProcedureRes];
         (async () => {
             for await (const m of sub) {
-                const obj = JSON.parse(JSON.stringify(m.data));
+                console.log(m.data);
+
                 let procedureType;
 
+
                 for (const prodType of procedureTypes) {
-                    const err = prodType.verify(obj);
-                    if (!err) {
-                        procedureType = prodType;
+                    console.log("ce sto a prova");
+                    try {
+                        const prodTypeObj = prodType.decode(m.data);
+                        procedureType = prodTypeObj;
                         break;
-                    }
-                }
-
-                switch (procedureType) {
-                    case ProcedureReq:
-                        this.handleProcedureReq(m);
-                        break;
-
-                    case ProcedureRes:
-                        this.handleProcedureRes(m);
-                        break;
-
-                    default:
-                        break;
+                    } catch (error) {
+                    console.error(error);
                 }
             }
+
+            console.log(procedureType);
+
+            switch (procedureType.constructor.name) {
+                case ProcedureReq.name:
+                    this.handleProcedureReq(m);
+                    break;
+
+                case ProcedureRes.name:
+                    this.handleProcedureRes(m);
+                    break;
+
+                default:
+                    break;
+            }
+
+
+        }
             console.log("subscription closed");
-        })();
+    })();
     }
 
 
     private setupProcedureCaller() {
-        const sub: Subscription = this.nc.subscribe(`*.callProcedure`);
-        (async () => {
-            for await (const m of sub) {
-                try {
-                    console.log("new message, trying to decode into a valid procedure")
-                    const procedureReq: ProcedureReq = ProcedureReq.decode(m.data);
-                    procedureReq.senderUhuraId = this.uhura_core_id;
-                    /**@todo resolve destination by procedure */
-
-                    if (procedureReq.receiverUhuraId) {
-                        this.nc.publish(`${this.uhura_core_id}.sendMessage.binary`, ProcedureReq.encode(procedureReq).finish())
-                    }
-                } catch (error) {
-
+    const sub: Subscription = this.nc.subscribe(`${this.uhura_core_id}.callProcedure`);
+    (async () => {
+        for await (const m of sub) {
+            console.log("received a message")
+            try {
+                console.log("new message, trying to decode into a valid procedure")
+                const procedureReq: ProcedureReq = ProcedureReq.decode(m.data);
+                procedureReq.senderUhuraId = this.uhura_core_id;
+                /**@todo resolve destination by procedure */
+                console.log(procedureReq)
+                if (procedureReq.receiverUhuraId) {
+                    console.log("sending procedure to: " + procedureReq.receiverUhuraId);
+                    this.nc.publish(`${this.uhura_core_id}.sendMessage.binary`, ProcedureReq.encode(procedureReq).finish())
                 }
+            } catch (error) {
+
             }
-        });
-    }
+        }
+    })();
+}
 
     private handleProcedureReq(message: Msg) {
-        const procedureReq = ProcedureReq.decode(message.data);
+    const procedureReq = ProcedureReq.decode(message.data);
+    switch (procedureReq.procedure.type) {
+        case "nats":
+  
+            this.nc.publish(procedureReq.procedure.name, message.data);
+            break;
 
-        switch (procedureReq.procedure.type) {
-            case "nats":
-
-                break;
-
-            default:
-                break;
-        }
-
+        default:
+            break;
     }
+
+}
 
     private handleProcedureRes(message: Msg) {
 
-    }
+}
 }

@@ -5,7 +5,7 @@ import { ProcedureManager } from "./procedureManager";
 async function bootstrap() {
   const nc = await connect({ servers: "nats://0.0.0.0:4222" });
 
-  const uhura_core_id = "BETA";
+  const uhura_core_id = "ALPHA";
 
   ProcedureManager.getInstance().setNatsConnection(nc).setUhuraCoreId(uhura_core_id).setup();
   console.log(uhura_core_id);

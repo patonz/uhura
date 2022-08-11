@@ -14,6 +14,7 @@ async function bootstrap() {
 
     /**protobuff from js object */
     let service = Service.create(serviceData);
+    service.id = "test";
 
     let addServiceReq = AddServiceReq.create();
     addServiceReq.service = service;
@@ -50,17 +51,18 @@ async function bootstrap() {
     const sub = connection.subscribe(printProcedure.name);
     (async () => {
         for await (let m of sub) {
+            console.log("received a message");
             try {
                 const request: ProcedureReq = ProcedureReq.decode(m.data);
                 console.log(`received from ${request.senderUhuraId} a ${request.procedure.name} procedure request`);
 
 
                 switch (request.procedure.name) {
-                    case  printProcedure.name:
-                            console.log(`performing ${request.procedure.name}`)
-                            console.log("HELLO!!!");
+                    case printProcedure.name:
+                        console.log(`performing ${request.procedure.name}`)
+                        console.log("HELLO!!!");
                         break;
-                
+
                     default:
                         break;
                 }
@@ -68,7 +70,8 @@ async function bootstrap() {
 
             }
         }
-    })
+        console.log("subscription closed");
+    })();
 
 }
 

@@ -6,6 +6,7 @@ import { FindServicesReq, FindServicesRes, AddServiceReq, AddServiceRes, DelServ
 
 async function bootstrap() {
     const uhura_core_id = 'BETA';
+
     const connection = await connect({ servers: 'nats://0.0.0.0:4222' });
 
     const reqFindAll = FindServicesReq.encode({}).finish();
@@ -13,14 +14,23 @@ async function bootstrap() {
     const resFindAllDecoded = FindServicesRes.decode(resFindAll.data);
     console.log('FindAll', resFindAllDecoded);
 
+    let printProcedure;
+    for (var prop in resFindAllDecoded.services[0].procedures) {
+        // object[prop]
+        printProcedure = resFindAllDecoded.services[0].procedures[prop];
+        break;
+    }
 
 
+    console.log(printProcedure);
     const procedureReq: ProcedureReq = ProcedureReq.create();
     procedureReq.inputs = null;
-    procedureReq.procedure = resFindAllDecoded.services[0].procedures[0];
-    procedureReq.receiverUhuraId = resFindAllDecoded.services[0].nodeId;
-    
+    procedureReq.procedure = printProcedure;
+    procedureReq.receiverUhuraId = "ALPHA";
+    console.log(procedureReq);
     connection.publish(`${uhura_core_id}.callProcedure`, ProcedureReq.encode(procedureReq).finish());
+    
+
 }
 
 bootstrap();
