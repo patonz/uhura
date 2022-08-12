@@ -52,6 +52,7 @@ setTimeout(async () => {
     console.log(registeredAdapter) // debug print
 
     const subSendMessage = nc.subscribe(`${core_id}.${adapter.id}.sendMessage`);
+    console.log(`listening on: ${subSendMessage.getSubject()}`);
     (async () => {
         for await (const m of subSendMessage) {
             nc.publish("adaptersNetwork", m.data)
@@ -63,6 +64,7 @@ setTimeout(async () => {
 
 
 const subAdaptersNetwork = nc.subscribe('adaptersNetwork');
+console.log(`listening on: ${subAdaptersNetwork.getSubject()}`);
 (async () => {
     for await (const m of subAdaptersNetwork) {
         const dataObj = SendMessageRequest.toObject(SendMessageRequest.decode(m.data))

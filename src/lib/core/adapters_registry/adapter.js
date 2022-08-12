@@ -3,7 +3,7 @@ class Adapter {
     name
     type
     linkStatus
-
+    constructor(){}
 }
 
 module.exports = Adapter;

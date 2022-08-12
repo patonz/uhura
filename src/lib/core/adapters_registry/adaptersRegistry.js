@@ -1,5 +1,4 @@
-const Adapter = require("./adapter");
-
+const Adapter = require('./adapter');
 class AdaptersRegistry {
     
 

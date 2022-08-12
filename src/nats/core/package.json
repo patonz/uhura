@@ -1,6 +1,6 @@
 {
   "name": "core",
-  "type": "module",
+  "type": "commonjs",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,7 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "uhura_core": "file:../../lib/core",
-    "nats": "^2.6.1",
-    "protobufjs": "^6.11.2"
+    "nats": "^2.7.1",
+    "protobufjs": "^7"
   }
 }

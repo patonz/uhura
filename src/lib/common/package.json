@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "danfojs": "^1.1.1",
-    "luxon": "^2.4.0",
+    "luxon": "^3.0.0",
     "winston": "^3.7.2"
   }
 }
