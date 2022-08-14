@@ -1,12 +1,12 @@
 import { connect } from 'nats';
 import { ProcedureReq } from '../src/common/protos/generated';
-import { DISCOVERY_ADD_SERVICE_SUBJECT, DISCOVERY_DEL_SERVICE_SUBJECT } from '../../uhura-discovery/src/common/constants';
-import { AddServiceReq, AddServiceRes, DelServiceReq, DelServiceRes, Procedure, Service } from '../../uhura-discovery/src/common/protos/generated';
+import { DISCOVERY_ADD_SERVICE_SUBJECT } from '../../uhura-discovery/src/common/constants';
+import { AddServiceReq, AddServiceRes, Procedure, Service } from '../../uhura-discovery/src/common/protos/generated';
 
 const serviceData = {
     name: 'Hello',
     description: 'My Hello Service',
-    nodeId: 'ALPHA', // uhura id
+    nodeId: 'ALPHA', // uhura node id
 };
 
 async function bootstrap() {
@@ -21,7 +21,7 @@ async function bootstrap() {
 
     let addMe = AddServiceReq.encode(addServiceReq).finish();
     console.log(`requesting registration of ${service.name} on uhura-discovery`);
-    const addMeRes = await connection.request(DISCOVERY_ADD_SERVICE_SUBJECT, addMe);
+    const addMeRes = await connection.request(`${service.nodeId}:${DISCOVERY_ADD_SERVICE_SUBJECT}`, addMe);
     const addMeResDecoded = AddServiceRes.decode(addMeRes.data)
 
 
@@ -31,7 +31,9 @@ async function bootstrap() {
 
     console.log("updating service with a procedure based on the generated serviceId")
     service.id = addMeResDecoded.serviceId;
-    /**empty proto then filled */
+
+
+    /**new procedure from empty instance */
     let printProcedure = Procedure.create();
     printProcedure.name = `${service.nodeId}.${service.id}.print`; // nats specific example
     printProcedure.description = "prints Hello! :D"
@@ -45,9 +47,11 @@ async function bootstrap() {
 
     addMe = AddServiceReq.encode(addServiceReq).finish();
 
-    await connection.request(DISCOVERY_ADD_SERVICE_SUBJECT, addMe);
+    /**with the same id, we can update the service using the same request */
+    await connection.request(`${service.nodeId}:${DISCOVERY_ADD_SERVICE_SUBJECT}`, addMe);
 
 
+    /**as described on the procedure, we MUST implement its behavior: the callable procedure */
     const sub = connection.subscribe(printProcedure.name);
     (async () => {
         for await (let m of sub) {
