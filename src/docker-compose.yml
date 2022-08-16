@@ -2,13 +2,16 @@ version: "2"
 volumes:
     uhura-volume:
     fastdds-volume:
+
 services:
   nats:
     image: nats
     ports:
       - "8222:8222"
       - "4222:4222"
-    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --http_port 8222 "
+    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --http_port 8222"
+    volumes:
+      - $PWD/nats-server.conf:/nats-server.conf
 
   uhura-gateway-a:
     build: 
@@ -40,6 +43,7 @@ services:
     command: "node index.js"
     environment:
       - ID=ALPHA
+      - DEBUG=false
   uhura-adapter-a:
     build: 
       context: .
@@ -48,6 +52,7 @@ services:
     command: "node index.js"
     environment:
       - ID=ALPHA
+      - DEBUG=false
     depends_on:
       - uhura-core-a
 
@@ -83,6 +88,7 @@ services:
     command: "node index.js"
     environment:
       - ID=BETA
+      - DEBUG=false
   uhura-adapter-b:
     build: 
       context: .
@@ -93,6 +99,7 @@ services:
     command: "node index.js"
     environment:
       - ID=BETA
+      - DEBUG=false
 
 
 

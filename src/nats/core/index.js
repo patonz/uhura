@@ -28,6 +28,13 @@ async function bootsrap() {
         id = process.env.ID;
     }
 
+    let debug = true;
+    if (process.env.DEBUG === "true") {
+        debug = true;
+    } else debug = false;
+    console.log("debug env: "+debug);
+
+
 
     let Message;
     let Node;
@@ -117,7 +124,7 @@ async function bootsrap() {
     console.log(`listening on: ${subSendMessageBinary.getSubject()}`);
     (async () => {
         for await (const m of subSendMessageBinary) {
-            console.log(`[${subSendMessageBinary.getSubject()}]: ${(m.data)}`);
+            console.log(`[${subSendMessageBinary.getSubject()}]: ${JSON.stringify(m.data)}`);
             let request = {
                 message: { binary: m.data, type: 0 },
                 priority: 0,
@@ -125,8 +132,9 @@ async function bootsrap() {
             }
 
             let adapter = UhuraCore.getAdapterByRequest(request);
-            if (typeof adapter === Adapter) {
+            if (adapter instanceof Adapter) {
                 request.sender.adapterId = adapter.id
+                console.log(`sending binary to:[${id}.${adapter.id}.sendMessage]`);
                 nc.publish(`${id}.${adapter.id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
             }
 
@@ -161,13 +169,24 @@ async function bootsrap() {
         for await (const m of subReceivedMessage) {
 
             const request = (SendMessageRequest.toObject(SendMessageRequest.decode(m.data)));
-            console.log(`received a message ${JSON.stringify(request)}`);
+
             if (request.message.type == 0 || request.message.type == 1) {
                 if (request.message.text) {
+                    if (request.message.text.contains("HB#")) {
+                        //HB RECEIVED, handle for more infos
+                    } else {
+                        if (debug) {
+                            console.log(`received a message.text ${JSON.stringify(request)}`);
+                        }
+
+                    }
                     nc.publish(`${id}.receivedMessage.text`, stringCodec.encode(request.message.text))
                 }
 
                 if (request.message.binary) {
+                    if (debug) {
+                        console.log(`received a message.binary ${JSON.stringify(request)}`);
+                    }
                     nc.publish(`${id}.receivedMessage.binary`, request.message.binary)
                 }
             }
@@ -183,18 +202,20 @@ async function bootsrap() {
     let counter = 0;
     setInterval(() => {
         let request = {
-            message: { text: "" + counter, type: 2 },
+            message: { text: "HB#" + counter, type: 2 },
             priority: 0,
             sender: { id: id, adapterId: "test1234" }
         }
 
         let adapter = UhuraCore.getAdapterByRequest(request);
 
-        console.log(adapter);
         if (adapter instanceof Adapter) {
 
             request.sender.adapterId = adapter.id
-            console.log(`sending heartbeat to ${id}.${adapter.id}.sendMessage`);
+            if (debug) {
+                console.log(`sending heartbeat to ${id}.${adapter.id}.sendMessage`);
+            }
+
             nc.publish(`${id}.${adapter.id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
             counter++
         }

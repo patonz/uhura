@@ -22,9 +22,15 @@ fs.readdirSync(protoFolder).forEach(file => {
  * all cores shares the same topics, but they will start with a different name in order to separate them.
  */
 let core_id = "AlphaCore";
-if(process.env.ID){
+if (process.env.ID) {
     core_id = process.env.ID;
 }
+
+let debug = true;
+if (process.env.DEBUG === "true") {
+    debug = true;
+} else debug = false;
+console.log("debug env: "+debug);
 
 
 let adapter;
@@ -69,7 +75,9 @@ console.log(`listening on: ${subAdaptersNetwork.getSubject()}`);
     for await (const m of subAdaptersNetwork) {
         const dataObj = SendMessageRequest.toObject(SendMessageRequest.decode(m.data))
         if (dataObj.sender.id !== core_id) {
-            console.log(`rcv from network ${JSON.stringify(dataObj)}`);
+            if (debug) {
+                console.log(`rcv from network ${JSON.stringify(dataObj)}`);
+            }
             nc.publish(`${core_id}.receivedMessageAdapter`, m.data);
         }
     }
