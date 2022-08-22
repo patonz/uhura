@@ -1,0 +1,23 @@
+version: "2"
+services:
+
+  uhura-gateway:
+    image: patonz/uhura:gateway_${TAG}
+    build: 
+      context: .
+      dockerfile: gateway.Dockerfile
+  uhura-discovery:
+    image: patonz/uhura:discovery_${TAG}
+    build: 
+      context: .
+      dockerfile: discovery.Dockerfile
+  uhura-core:
+    image: patonz/uhura:core_${TAG}
+    build: 
+      context: .
+      dockerfile: core.Dockerfile
+  uhura-adapter:
+    image: patonz/uhura:adapter_nats_${TAG}
+    build: 
+      context: .
+      dockerfile: adapter.Dockerfile
