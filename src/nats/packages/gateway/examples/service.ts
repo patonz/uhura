@@ -37,8 +37,8 @@ async function bootstrap() {
     let printProcedure = Procedure.create();
     printProcedure.name = `${service.nodeId}.${service.id}.print`; // nats specific example
     printProcedure.description = "prints Hello! :D"
-    printProcedure.reply = false // opt for now
-    printProcedure.type = "nats";
+    printProcedure.reply = false // not required
+    printProcedure.type = "nats"; // the gateway can only call nats procedures
     printProcedure.inputFields = null // act as "no params"
 
 
@@ -60,7 +60,7 @@ async function bootstrap() {
                 const request: ProcedureReq = ProcedureReq.decode(m.data);
                 console.log(`received from ${request.senderUhuraId} a ${request.procedure.name} procedure request`);
 
-
+                /**@TODO check required fields*/
                 switch (request.procedure.name) {
                     case printProcedure.name:
                         console.log(`performing ${request.procedure.name}`)
