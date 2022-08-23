@@ -10,11 +10,11 @@ services:
       - "8222:8222"
       - "4222:4222"
     command: "--cluster_name NATS -c nats-server.conf --cluster nats://0.0.0.0:6222 --http_port 8222"
-    volumes:
-      - $PWD/nats-server.conf:/nats-server.conf
+    #volumes:
+    #  - $PWD/nats-server.conf:/nats-server.conf
 
-  uhura-gateway-a:
-    image: patonz/uhura:gateway_${TAG}
+  uhura_gateway_a:
+    #image: patonz/uhura:gateway_${TAG}
     build: 
       context: .
       dockerfile: gateway.Dockerfile
@@ -24,10 +24,10 @@ services:
       - NATS_SERVER=0.0.0.0:4222
       - UHURA_CORE_ID=ALPHA
     depends_on:
-      - uhura-adapter-a
+      - uhura_adapter_a
       - nats
-  uhura-discovery-a:
-    image: patonz/uhura:discovery_${TAG}
+  uhura_discovery_a:
+    #image: patonz/uhura:discovery_${TAG}
     build: 
       context: .
       dockerfile: discovery.Dockerfile
@@ -37,10 +37,10 @@ services:
       - NATS_SERVER=0.0.0.0:4222
       - UHURA_CORE_ID=ALPHA
     depends_on:
-      - uhura-gateway-a
+      - uhura_gateway_a
       - nats
-  uhura-core-a:
-    image: patonz/uhura:core_${TAG}
+  uhura_core_a:
+    #image: patonz/uhura:core_${TAG}
     build: 
       context: .
       dockerfile: core.Dockerfile
@@ -51,8 +51,8 @@ services:
       - DEBUG=false
     depends_on:
       - nats
-  uhura-adapter-a:
-    image: patonz/uhura:adapter_nats_${TAG}
+  uhura_adapter_a:
+    #image: patonz/uhura:adapter_nats_${TAG}
     build: 
       context: .
       dockerfile: adapter.Dockerfile
@@ -62,13 +62,13 @@ services:
       - ID=ALPHA
       - DEBUG=false
     depends_on:
-      - uhura-core-a
+      - uhura_core_a
       - nats
 
 
 
-  uhura-gateway-b:
-    image: patonz/uhura:gateway_${TAG}
+  uhura_gateway_b:
+    #image: patonz/uhura:gateway_${TAG}
     build: 
       context: .
       dockerfile: gateway.Dockerfile
@@ -78,10 +78,10 @@ services:
       - NATS_SERVER=0.0.0.0:4222
       - UHURA_CORE_ID=BETA
     depends_on:
-      - uhura-adapter-b
+      - uhura_adapter_b
       - nats
-  uhura-discovery-b:
-    image: patonz/uhura:discovery_${TAG}
+  uhura_discovery_b:
+    #image: patonz/uhura:discovery_${TAG}
     build: 
       context: .
       dockerfile: discovery.Dockerfile
@@ -91,10 +91,10 @@ services:
       - NATS_SERVER=0.0.0.0:4222
       - UHURA_CORE_ID=BETA
     depends_on:
-      - uhura-gateway-b
+      - uhura_gateway_b
       - nats
-  uhura-core-b:
-    image: patonz/uhura:core_${TAG}
+  uhura_core_b:
+    #image: patonz/uhura:core_${TAG}
     build: 
       context: .
       dockerfile: core.Dockerfile
@@ -105,13 +105,13 @@ services:
       - DEBUG=false
     depends_on:
       - nats
-  uhura-adapter-b:
-    image: patonz/uhura:adapter_nats_${TAG}
+  uhura_adapter_b:
+    #image: patonz/uhura:adapter_nats_${TAG}
     build: 
       context: .
       dockerfile: adapter.Dockerfile
     depends_on:
-      - uhura-core-b
+      - uhura_core_b
       - nats
     network_mode: host
     command: "node index.js"
