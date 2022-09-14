@@ -101,8 +101,12 @@ export class ProcedureManager {
         console.log(procedureReq);
         switch (procedureReq.procedure.type) {
             case "nats":
-
-                this.nc.publish(procedureReq.procedure.name, message.data);
+                let subject = procedureReq.procedure.name;
+                if(procedureReq.receiverUhuraId === "broadcast"){
+                    subject = subject.replace("broadcast", this.uhura_core_id);
+                }
+                console.log(`subject resolved for procedure: ${subject}`)
+                this.nc.publish(subject, message.data);
                 break;
 
             default:
