@@ -1,5 +1,6 @@
 FROM node:16
 ENV UDEV=on
+WORKDIR /test_results
 WORKDIR /app
 COPY . .
 

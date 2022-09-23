@@ -1,19 +1,9 @@
 version: "2"
 volumes:
     uhura-volume:
-    fastdds-volume:
 
 services:
-  nats:
-    image: nats
-    ports:
-      - "8222:8222"
-      - "4222:4222"
-    command: "--cluster_name NATS -c nats-server.conf --cluster nats://0.0.0.0:6222 --http_port 8222"
-    volumes:
-      - $PWD/nats-server.conf:/nats-server.conf
-
-  uhura_gateway_a:
+  uhura_gateway:
     #image: patonz/uhura:gateway_${TAG}
     build: 
       context: .
@@ -22,24 +12,30 @@ services:
     command: "npm run start"
     environment:
       - NATS_SERVER=0.0.0.0:4222
-      - UHURA_CORE_ID=ALPHA
+      - UHURA_CORE_ID=${UHURA_CORE_ID}
     depends_on:
       - uhura_adapter_a
       - nats
-  #uhura_discovery_a:
-  #  #image: patonz/uhura:discovery_${TAG}
-  #  build: 
-  #    context: .
-  #    dockerfile: discovery.Dockerfile
-  #  network_mode: host
-  #  command: "npm run start"
-  #  environment:
-  #    - NATS_SERVER=0.0.0.0:4222
-  #    - UHURA_CORE_ID=ALPHA
-  #    - SYNC_DELAY=15000
-  #  depends_on:
-  #    - uhura_gateway_a
-  #    - nats
+  uhura_discovery_a:
+    #image: patonz/uhura:discovery_${TAG}
+    build: 
+      context: .
+      dockerfile: discovery.Dockerfile
+    network_mode: host
+    command: "npm run start"
+    environment:
+      - NATS_SERVER=0.0.0.0:4222
+      - UHURA_CORE_ID=${UHURA_CORE_ID}
+      - SYNC_DELAY=${SYNC_DELAY}
+      - TEST=true
+      - MAX_NODES=${MAX_NODES}
+      - NODES=${NODES}
+    volumes:
+      - uhura-volume:/test_results
+
+    depends_on:
+      - uhura_gateway_a
+      - nats
   uhura_core_a:
     #image: patonz/uhura:core_${TAG}
     build: 
@@ -48,11 +44,11 @@ services:
     network_mode: host
     command: "node index.js"
     environment:
-      - ID=ALPHA
+      - ID=${UHURA_CORE_ID}
       - DEBUG=false
     depends_on:
       - nats
-  uhura_adapter_a:
+  uhura_adapter:
     #image: patonz/uhura:adapter_nats_${TAG}
     build: 
       context: .
@@ -60,121 +56,8 @@ services:
     network_mode: host
     command: "node index.js"
     environment:
-      - ID=ALPHA
+      - ID=${UHURA_CORE_ID}
       - DEBUG=false
     depends_on:
       - uhura_core_a
       - nats
-
-
-
-  uhura_gateway_b:
-    #image: patonz/uhura:gateway_${TAG}
-    build: 
-      context: .
-      dockerfile: gateway.Dockerfile
-    network_mode: host
-    command: "npm run start"
-    environment:
-      - NATS_SERVER=0.0.0.0:4222
-      - UHURA_CORE_ID=BETA
-    depends_on:
-      - uhura_adapter_b
-      - nats
-  #uhura_discovery_b:
-  #  #image: patonz/uhura:discovery_${TAG}
-  #  build: 
-  #    context: .
-  #    dockerfile: discovery.Dockerfile
-  #  network_mode: host
-  #  command: "npm run start"
-  #  environment:
-  #    - NATS_SERVER=0.0.0.0:4222
-  #    - UHURA_CORE_ID=BETA
-  #    - SYNC_DELAY=15000
-  #  depends_on:
-  #    - uhura_gateway_b
-  #    - nats
-  uhura_core_b:
-    #image: patonz/uhura:core_${TAG}
-    build: 
-      context: .
-      dockerfile: core.Dockerfile
-    network_mode: host
-    command: "node index.js"
-    environment:
-      - ID=BETA
-      - DEBUG=false
-    depends_on:
-      - nats
-  uhura_adapter_b:
-    #image: patonz/uhura:adapter_nats_${TAG}
-    build: 
-      context: .
-      dockerfile: adapter.Dockerfile
-    depends_on:
-      - uhura_core_b
-      - nats
-    network_mode: host
-    command: "node index.js"
-    environment:
-      - ID=BETA
-      - DEBUG=false
-
-
-  uhura_gateway_c:
-    #image: patonz/uhura:gateway_${TAG}
-    build: 
-      context: .
-      dockerfile: gateway.Dockerfile
-    network_mode: host
-    command: "npm run start"
-    environment:
-      - NATS_SERVER=0.0.0.0:4222
-      - UHURA_CORE_ID=GAMMA
-    depends_on:
-      - uhura_adapter_c
-      - nats
-  #uhura_discovery_b:
-  #  #image: patonz/uhura:discovery_${TAG}
-  #  build: 
-  #    context: .
-  #    dockerfile: discovery.Dockerfile
-  #  network_mode: host
-  #  command: "npm run start"
-  #  environment:
-  #    - NATS_SERVER=0.0.0.0:4222
-  #    - UHURA_CORE_ID=BETA
-  #    - SYNC_DELAY=15000
-  #  depends_on:
-  #    - uhura_gateway_b
-  #    - nats
-  uhura_core_c:
-    #image: patonz/uhura:core_${TAG}
-    build: 
-      context: .
-      dockerfile: core.Dockerfile
-    network_mode: host
-    command: "node index.js"
-    environment:
-      - ID=GAMMA
-      - DEBUG=false
-    depends_on:
-      - nats
-  uhura_adapter_c:
-    #image: patonz/uhura:adapter_nats_${TAG}
-    build: 
-      context: .
-      dockerfile: adapter.Dockerfile
-    depends_on:
-      - uhura_core_c
-      - nats
-    network_mode: host
-    command: "node index.js"
-    environment:
-      - ID=GAMMA
-      - DEBUG=false
-
-
-    
-
