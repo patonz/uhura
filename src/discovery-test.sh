@@ -5,7 +5,7 @@ runUhura() {
     param2="SYNC_DELAY=$2"
     param3="MAX_NODES=$3"
     param4="TEST=true"
-    param5="TAG=0.1.5-test"
+    param5="TAG=0.1.9-test"
     destdir=.env.discovery
 
     >$destdir
@@ -33,14 +33,15 @@ for n in $(seq $(($MAX_NODES))); do
     echo removing previous data..
     docker run --rm -v "app$(($n))_uhura-volume:/test_results" ubuntu /bin/sh -c "rm -rf /test_results/*"
     echo "done"
+    waitTime=60
     if [ $n -eq $(($MAX_NODES)) ]; then
-        echo last is NODE_$n, waiting 60 seconds...
-        sleep 20
+        echo last is NODE_$n, waiting $waitTime seconds...
+        sleep $waitTime
         echo NODE_$n uhura launching...
         runUhura $n $SYNC_DELAY $MAX_NODES
         echo "done"
     else
-        sleep 10
+        sleep 2
         echo NODE_$n uhura launching...
         runUhura $n $SYNC_DELAY $MAX_NODES $CURRENTPATH
         echo "done"
