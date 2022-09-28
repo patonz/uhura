@@ -4,7 +4,7 @@ volumes:
 
 services:
   uhura_gateway:
-    #image: patonz/uhura:gateway_${TAG}
+    image: patonz/uhura:gateway_${TAG}
     build: 
       context: .
       dockerfile: gateway.Dockerfile
@@ -16,8 +16,8 @@ services:
     depends_on:
       - uhura_adapter_a
       - nats
-  uhura_discovery_a:
-    #image: patonz/uhura:discovery_${TAG}
+  uhura_discovery:
+    image: patonz/uhura:discovery_${TAG}
     build: 
       context: .
       dockerfile: discovery.Dockerfile
@@ -36,8 +36,8 @@ services:
     depends_on:
       - uhura_gateway_a
       - nats
-  uhura_core_a:
-    #image: patonz/uhura:core_${TAG}
+  uhura_core:
+    image: patonz/uhura:core_${TAG}
     build: 
       context: .
       dockerfile: core.Dockerfile
@@ -49,7 +49,7 @@ services:
     depends_on:
       - nats
   uhura_adapter:
-    #image: patonz/uhura:adapter_nats_${TAG}
+    image: patonz/uhura:adapter_nats_${TAG}
     build: 
       context: .
       dockerfile: adapter.Dockerfile

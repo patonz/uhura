@@ -5,6 +5,7 @@ runUhura() {
     param2="SYNC_DELAY=$2"
     param3="MAX_NODES=$3"
     param4="TEST=true"
+    param5="TAG=0.1.5-test"
     destdir=.env.discovery
 
     >$destdir
@@ -14,11 +15,12 @@ runUhura() {
         echo $param2 >> $destdir
         echo $param3 >> $destdir
         echo $param4 >> $destdir
+        echo $param5 >> $destdir
         echo "NODES=NODE_$(($1-1));NODE_$(($1+1))">> $destdir
     fi
 
 
-    wt.exe --window 0 new-tab --profile "Ubuntu-20.04" --title "NODE_$1" --tabColor "#F00" docker compose -p app$1 -f \\\\wsl.localhost\\Ubuntu-20.04\\home\\patonz\\git\\uhura\\src\\discovery-test.yml --env-file \\\\wsl.localhost\\Ubuntu-20.04\\home\\patonz\\git\\uhura\\src\\.env.discovery up --build
+    wt.exe --window 0 new-tab --profile "Ubuntu-20.04" --title "NODE_$1" --tabColor "#F00" docker compose -p app$1 -f \\\\wsl.localhost\\Ubuntu-20.04\\home\\patonz\\git\\uhura\\src\\discovery-test.yml --env-file \\\\wsl.localhost\\Ubuntu-20.04\\home\\patonz\\git\\uhura\\src\\.env.discovery up
 }
 
 export SYNC_DELAY=$1
@@ -33,12 +35,12 @@ for n in $(seq $(($MAX_NODES))); do
     echo "done"
     if [ $n -eq $(($MAX_NODES)) ]; then
         echo last is NODE_$n, waiting 60 seconds...
-        sleep 2
+        sleep 20
         echo NODE_$n uhura launching...
         runUhura $n $SYNC_DELAY $MAX_NODES
         echo "done"
     else
-        sleep 0.1
+        sleep 10
         echo NODE_$n uhura launching...
         runUhura $n $SYNC_DELAY $MAX_NODES $CURRENTPATH
         echo "done"
