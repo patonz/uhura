@@ -43,7 +43,7 @@ export class ProcedureManager {
 
 
                 for (const prodType of procedureTypes) {
-                    console.log("ce sto a prova");
+                    console.log("decoding procedure...");
                     try {
                         const prodTypeObj = prodType.decode(m.data);
                         procedureType = prodTypeObj;
@@ -53,14 +53,15 @@ export class ProcedureManager {
                     }
                 }
 
-                console.log(procedureType);
                 if (procedureType.procedure && procedureType.procedure.name) {
                     switch (procedureType.constructor.name) {
                         case ProcedureReq.name:
+                            console.log("handling ProcedureReq");
                             this.handleProcedureReq(m);
                             break;
 
                         case ProcedureRes.name:
+                            console.log("handling ProcedureRes");
                             this.handleProcedureRes(m);
                             break;
 
@@ -69,7 +70,7 @@ export class ProcedureManager {
                     }
                 }
             }
-            console.log("subscription closed");
+            console.warn("subscription closed");
         })();
     }
 
@@ -78,7 +79,7 @@ export class ProcedureManager {
         const sub: Subscription = this.nc.subscribe(`${this.uhura_core_id}.callProcedure`);
         (async () => {
             for await (const m of sub) {
-                console.log("received a message")
+                console.log("received a callProcedure message")
                 try {
                     console.log("new message, trying to decode into a valid procedure")
                     const procedureReq: ProcedureReq = ProcedureReq.decode(m.data);
@@ -104,6 +105,10 @@ export class ProcedureManager {
                 let subject = procedureReq.procedure.name;
                 if(procedureReq.receiverUhuraId === "broadcast"){
                     subject = subject.replace("broadcast", this.uhura_core_id);
+                } else 
+                if(procedureReq.receiverUhuraId != this.uhura_core_id){
+                    console.warn("received a callProcedure for another node, skipping");
+                    return;
                 }
                 console.log(`subject resolved for procedure: ${subject}`)
                 this.nc.publish(subject, message.data);
@@ -116,6 +121,6 @@ export class ProcedureManager {
     }
 
     private handleProcedureRes(message: Msg) {
-
+        console.log("not implemented, skipping");
     }
 }

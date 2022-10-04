@@ -5,7 +5,7 @@ runUhura() {
     param2="SYNC_DELAY=$2"
     param3="MAX_NODES=$3"
     param4="TEST=true"
-    param5="TAG=0.1.9-test"
+    param5="TAG=0.1.17-test"
     destdir=.env.discovery
 
     >$destdir
