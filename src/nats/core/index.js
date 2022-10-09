@@ -2,6 +2,7 @@
 
 
 const UhuraCorePkg = require('uhura_core');
+const appRoot = require('app-root-path');
 const UhuraCore = UhuraCorePkg.UhuraCore;
 const Adapter = UhuraCorePkg.Adapter;
 const nats = require('nats');
@@ -13,7 +14,7 @@ const stringCodec = StringCodec();
 async function bootsrap() {
     const nc = await connect({ servers: "nats://0.0.0.0:4222", encoding: 'binary' });
 
-    const protoFolder = '../../common/protos/';
+    const protoFolder = `${appRoot}/../../common/protos/`;
 
     let protoList = [];
 

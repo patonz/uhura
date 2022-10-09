@@ -14,7 +14,7 @@ services:
       - NATS_SERVER=0.0.0.0:4222
       - UHURA_CORE_ID=${UHURA_CORE_ID}
     depends_on:
-      - uhura_adapter_a
+      - uhura_adapter
       - nats
   uhura_discovery:
     image: patonz/uhura:discovery_${TAG}
@@ -27,14 +27,14 @@ services:
       - NATS_SERVER=0.0.0.0:4222
       - UHURA_CORE_ID=${UHURA_CORE_ID}
       - SYNC_DELAY=${SYNC_DELAY}
-      - TEST=true
+      - TEST=${TEST}
       - MAX_NODES=${MAX_NODES}
       - NODES=${NODES}
     volumes:
       - uhura-volume:/test_results
 
     depends_on:
-      - uhura_gateway_a
+      - uhura_gateway
       - nats
   uhura_core:
     image: patonz/uhura:core_${TAG}
@@ -59,5 +59,5 @@ services:
       - ID=${UHURA_CORE_ID}
       - DEBUG=false
     depends_on:
-      - uhura_core_a
+      - uhura_core
       - nats
