@@ -1,0 +1,30 @@
+version: "2"
+volumes:
+    uhura-volume:
+
+services:
+  nats:
+    image: nats
+    ports:
+      - "8222:8222"
+      - "4222:4222"
+      - "6222:6222"
+    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --routes=nats://192.168.50.75:6222"
+    
+
+  uhura:
+    image: patonz/uhura:uhura_minimal_0.1.33-test
+    network_mode: host
+    environment:
+      - NATS_SERVER=0.0.0.0:4222
+      - UHURA_CORE_ID=${UHURA_CORE_ID}
+      - ID=${UHURA_CORE_ID}
+      - SYNC_DELAY=${SYNC_DELAY}
+      - TEST=${TEST}
+      - MAX_NODES=${MAX_NODES}
+      - NODES=${NODES}
+      - DEBUG=false
+    volumes:
+      - uhura-volume:/test_results
+    depends_on:
+      - nats

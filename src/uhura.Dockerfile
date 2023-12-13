@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:16-alpine
 ENV UDEV=on
 
 RUN npm install pm2@latest -g
