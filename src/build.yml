@@ -21,3 +21,8 @@ services:
     build: 
       context: .
       dockerfile: adapter.Dockerfile
+  uhura-minimal:
+    image: patonz/uhura:uhura_minimal_${TAG}
+    build: 
+      context: .
+      dockerfile: uhura.Dockerfile

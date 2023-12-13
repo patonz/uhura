@@ -1,0 +1,29 @@
+version: "2"
+volumes:
+    uhura-volume:
+
+services:
+  nats:
+    image: nats
+    ports:
+      - "8222:8222"
+      - "4222:4222"
+    command: "--cluster_name NATS -c nats-server.conf --cluster nats://0.0.0.0:6222 --http_port 8222"
+    
+
+  uhura:
+    image: uhura-minimal
+    network_mode: host
+    environment:
+      - NATS_SERVER=0.0.0.0:4222
+      - UHURA_CORE_ID=${UHURA_CORE_ID}
+      - ID=${UHURA_CORE_ID}
+      - SYNC_DELAY=${SYNC_DELAY}
+      - TEST=${TEST}
+      - MAX_NODES=${MAX_NODES}
+      - NODES=${NODES}
+      - DEBUG=false
+    volumes:
+      - uhura-volume:/test_results
+    depends_on:
+      - nats
