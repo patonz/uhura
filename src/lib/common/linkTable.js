@@ -11,7 +11,7 @@ class LinkTable {
     }
     /**
      * 
-     * @param {address or remote nodeName} node 
+     * @param {address/remote: nodeName} node 
      * @param {frame object like: frame.header, frame.id, frame.sender, frame.rssi, frame.timestamp, frame.cadence} frame 
      * @returns 
      */

@@ -20,6 +20,7 @@ class UhuraCore {
     getAdapterByRequest(request){
         /**
          * apply policies
+         * dummy
          */
         if(AdaptersRegistry.adapter_list.length > 0){
             return AdaptersRegistry.adapter_list[0];

@@ -2,20 +2,30 @@
 
 
 const UhuraCorePkg = require('uhura_core');
+const UhuraCommonPkg = require("uhura_common");
 const appRoot = require('app-root-path');
 const UhuraCore = UhuraCorePkg.UhuraCore;
 const Adapter = UhuraCorePkg.Adapter;
+const ToolManager = UhuraCommonPkg.ToolManager;
+
+
 const nats = require('nats');
 const connect = nats.connect;
 const StringCodec = nats.StringCodec;
 const protobuf = require('protobufjs');
 const fs = require('fs');
+const { error } = require('console');
 const stringCodec = StringCodec();
 async function bootsrap() {
-    const nc = await connect({ servers: "nats://0.0.0.0:4222", encoding: 'binary' });
+
+    const logger = ToolManager.getLogger("CORE")
+
+    const nc = await connect({ servers: "nats://0.0.0.0:4222", encoding: 'binary' }).catch(error => {
+        logger.error(error);
+    });
 
     const protoFolder = `${appRoot}/../../common/protos/`;
-
+    
     let protoList = [];
 
 
@@ -33,7 +43,7 @@ async function bootsrap() {
     if (process.env.DEBUG === "true") {
         debug = true;
     } else debug = false;
-    console.log("debug env: "+debug);
+    logger.info(`debug env: %o`, debug);
 
 
 
@@ -64,7 +74,7 @@ async function bootsrap() {
         throw Error(errMsg)
     }
     let send_message_payload = { message: message_payload }
-    console.log(send_message_payload);
+    logger.debug("payload: %o",send_message_payload);
 
 
     errMsg = SendMessageRequest.verify(send_message_payload);

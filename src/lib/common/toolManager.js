@@ -30,9 +30,20 @@ class ToolManager {
 
   myFormat = format.printf(({ level, message, timestamp, ...metadata }) => {
     let msg = `${timestamp} [${level}] : ${message} `
-    if (metadata) {
-      msg += JSON.stringify(metadata)
+    // Check if the message is already an object
+    if (typeof message === 'object' && message !== null) {
+      msg += JSON.stringify(message);
+    } else {
+      msg += message;
+      // Check if metadata has any own properties
+      if (Object.keys(metadata).length > 0) {
+        // Convert metadata to a string if it's not empty
+        const metadataStr = JSON.stringify(metadata);
+        // Append metadata string to the message
+        msg += ' ' + metadataStr;
+      }
     }
+
     return msg
   });
 
@@ -61,8 +72,8 @@ class ToolManager {
       }
     );
   }
-  getLogger(tag){
-    if(this.logTag==undefined){
+  getLogger(tag) {
+    if (this.logTag == undefined) {
       this.logTag = tag;
     }
 
@@ -72,7 +83,7 @@ class ToolManager {
       format: format.combine(format.label({ label: this.logTag, message: true }), format.timestamp(), format.splat(), format.colorize(), this.myFormat), //format.json()
       transports: [new transports.Console()],
     });
-  
+
     return logger;
   }
 }
