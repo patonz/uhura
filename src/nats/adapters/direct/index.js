@@ -4,9 +4,13 @@ const StringCodec = nats.StringCodec;
 const protobuf = require("protobufjs");
 const fs = require("fs");
 const appRoot = require('app-root-path');
+const UhuraCommonPkg = require("uhura_common");
+const LinkTable = UhuraCommonPkg.LinkTable;
+
+
 
 async function bootsrap() {
-
+    const linkTable = new LinkTable(5);
 
     const stringCodec = StringCodec();
     const nc = await connect({ servers: "nats://0.0.0.0:4222", encoding: 'binary' });
@@ -28,6 +32,7 @@ async function bootsrap() {
     if (process.env.ID) {
         core_id = process.env.ID;
     }
+
 
     let debug = true;
     if (process.env.DEBUG === "true") {
@@ -79,7 +84,10 @@ async function bootsrap() {
             const dataObj = SendMessageRequest.toObject(SendMessageRequest.decode(m.data))
             if (dataObj.sender.id !== core_id) {
                 if (debug) {
+                    m.headers
                     console.log(`rcv from network ${JSON.stringify(dataObj)}`);
+                    let frame = { sender: dataObj.sender.id, header: m.headers }
+                    linkTable.addFrame();
                 }
                 nc.publish(`${core_id}.receivedMessageAdapter`, m.data);
             }
@@ -88,7 +96,7 @@ async function bootsrap() {
     })();
 
 
-    setInterval(() => { }, 1 << 30);
+
     console.log(`Uhura Virtual adapter started, core_id: "${core_id}"`)
 }
 

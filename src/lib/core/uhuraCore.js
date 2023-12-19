@@ -17,7 +17,7 @@ class UhuraCore {
     getAdapterList() {
         return AdaptersRegistry.adapter_list;
     }
-    getAdapterByRequest(request){
+    getAdapterByRequest(request, ){
         /**
          * apply policies
          * dummy
@@ -27,6 +27,7 @@ class UhuraCore {
         }
         return undefined;
     }
+    
 
     getLinkStatus(adapter_id) {
         /**@TODO */

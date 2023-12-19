@@ -1,21 +1,40 @@
 const dfd = require("danfojs");
 const { DataFrame } = require("danfojs/dist/danfojs-base");
 const { DateTime } = require("luxon");
+
+
+
+/**
+ * @typedef {Object} LinkTable
+ * @property {function(number): undefined} constructor - Create a LinkTable.
+ * @property {function(string, Object): undefined} addFrame - Adds a frame to the link table.
+ * @property {function(): undefined} updateAll - Periodically updates all nodes in the link table.
+ * @property {function(string): Object} update - Updates a specific node in the link table.
+ */
 class LinkTable {
 
     link = {};
 
     maxFrames = 5;
+    /**
+     * 
+     * @param {number} maxFrames 
+     */
     constructor(maxFrames) {
         this.maxFrames = maxFrames;
     }
     /**
      * 
      * @param {address/remote: nodeName} node 
-     * @param {frame object like: frame.header, frame.id, frame.sender, frame.rssi, frame.timestamp, frame.cadence} frame 
+     * @param {{frame.header, frame.id, frame.sender, frame.rssi, frame.timestamp, frame.cadence} frame 
      * @returns 
      */
     addFrame(node, frame) {
+
+
+        if(!frame.timestamp){
+            frame.timestamp = Date.now().toMillis();
+        }
 
         let df = [
             [frame.header, frame.id, frame.sender, frame.rssi, frame.timestamp, frame.cadence],
@@ -52,12 +71,23 @@ class LinkTable {
     }
 
     /**
-     * to be called periodically
+     * 
+     * @returns {pdr} final pdr
      */
     updateAll(){
+        let pdr = 0;
+        let nodesCount = 0;
         for (const [key, value] of Object.entries(this.link)) {
-            this.update(key);
+            let result = this.update(key);
+
+            if(pdr){
+                pdr+=result.pdr;
+                nodesCount++;
+            }
+    
           }
+
+          return pdr / nodesCount;
     }
 
     update(node){
@@ -70,7 +100,10 @@ class LinkTable {
             let query = dataFrame.loc({rows: condition});
             this.link[node].pdr = (query.values.length / dataFrame.values.length ) * 100;
             console.log(`${node}: pdr${this.link[node].pdr}% with ${query.values.length} of ${dataFrame.values.length}`);
+            return {node: node, pdr: this.link[node].pdr, entries: query.values.length, maxEntries: dataFrame.values.length}
         }
+
+        return {node: node, pdr: null, entries: null, maxEntries: null}
         
     }
 
