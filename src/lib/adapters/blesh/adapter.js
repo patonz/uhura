@@ -81,7 +81,7 @@ class BleshAdapter {
                     });
                 }
 
-            }, cadence); /**@TODO params from uhura-core*/
+            }, cadence); /**@TODO params from uhura-core*/  
         }, 2000); /**@TODO params from uhura-core*/
 
     }

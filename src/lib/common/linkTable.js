@@ -33,7 +33,7 @@ class LinkTable {
 
 
         if(!frame.timestamp){
-            frame.timestamp = Date.now().toMillis();
+            frame.timestamp = DateTime.now().toMillis();
         }
 
         let df = [

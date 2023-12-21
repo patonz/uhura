@@ -18,34 +18,37 @@ class ToolManager {
       trace: 5
     },
     colors: {
-      fatal: 'purple',
-      error: 'red',
-      warn: 'yellow',
-      info: 'green',
-      debug: 'blue',
-      trace: 'orange'
+      fatal: "purple", // Purple
+      error: "red", // Red
+      warn: "yellow",  // Yellow
+      info: "green",  // Green
+      debug: "blue", // Blue
+      trace: "cyan"  // Cyan (closest to Orange in standard ANSI colors)
     }
   };
 
 
   myFormat = format.printf(({ level, message, timestamp, ...metadata }) => {
-    let msg = `${timestamp} [${level}] : ${message} `
+    let msg = `${timestamp} [${level}] : `
+
     // Check if the message is already an object
     if (typeof message === 'object' && message !== null) {
       msg += JSON.stringify(message);
     } else {
       msg += message;
-      // Check if metadata has any own properties
-      if (Object.keys(metadata).length > 0) {
-        // Convert metadata to a string if it's not empty
-        const metadataStr = JSON.stringify(metadata);
-        // Append metadata string to the message
-        msg += ' ' + metadataStr;
-      }
     }
 
-    return msg
+    // Check if metadata has any own properties
+    if (Object.keys(metadata).length > 0) {
+      // Convert metadata to a string if it's not empty
+      const metadataStr = JSON.stringify(metadata);
+      // Append metadata string to the message
+      msg += ' ' + metadataStr;
+    }
+
+    return msg;
   });
+
 
 
   constructor() {
@@ -72,15 +75,19 @@ class ToolManager {
       }
     );
   }
-  getLogger(tag) {
+  getLogger(tag, level) {
     if (this.logTag == undefined) {
       this.logTag = tag;
+    }
+    let logLevel = 'debug'
+    if(level){
+      logLevel = level
     }
 
     let logger = createLogger({
       levels: this.logLevels.levels,
-      level: 'debug',
-      format: format.combine(format.label({ label: this.logTag, message: true }), format.timestamp(), format.splat(), format.colorize(), this.myFormat), //format.json()
+      level: logLevel,
+      format: format.combine(format.label({ label: this.logTag, message: true }), format.timestamp(), format.colorize(), this.myFormat), //format.json() format.splat(), 
       transports: [new transports.Console()],
     });
 

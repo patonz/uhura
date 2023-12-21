@@ -9,12 +9,31 @@ const LinkTable = UhuraCommonPkg.LinkTable;
 
 
 
+
 async function bootsrap() {
+    const log = UhuraCommonPkg.ToolManager.getLogger("NATS_ADAPTER", "trace");
     const linkTable = new LinkTable(5);
 
     const stringCodec = StringCodec();
-    const nc = await connect({ servers: "nats://0.0.0.0:4222", encoding: 'binary' });
 
+
+
+    let natsServerAddress = "nats://0.0.0.0:4222"
+
+    if (process.env.NATS_SERVER_ADDRESS) {
+        natsServerAddress = process.env.NATS_SERVER_ADDRESS
+    }
+    log.info(`NATS_SERVER_ADDRESS env: ${natsServerAddress}`);
+    const nc = await connect({ servers: natsServerAddress, encoding: 'binary' });
+
+
+    let adapterNatsServerAddress = natsServerAddress;
+    let nc_adapter = nc;
+    if (process.env.ADAPTER_NATS_SERVER_ADDRESS) {
+        adapterNatsServerAddress = process.env.ADAPTER_NATS_SERVER_ADDRESS;
+        nc_adapter = await connect({ servers: adapterNatsServerAddress, encoding: 'binary' });
+    }
+    log.info(`ADAPTER_NATS_SERVER_ADDRESS env: ${adapterNatsServerAddress}`);
     const protoFolder = `${appRoot}/../../../common/protos/`;
 
     let protoList = [];
@@ -38,7 +57,7 @@ async function bootsrap() {
     if (process.env.DEBUG === "true") {
         debug = true;
     } else debug = false;
-    console.log("debug env: " + debug);
+    log.info("debug env: " + debug);
 
 
     let adapter;
@@ -57,47 +76,47 @@ async function bootsrap() {
 
     setTimeout(async () => {
         const adapterObj = { name: `${core_id}_adapter`, type: "nats" } // plain object
-        console.log("requesting registration to core")
+        log.info("requesting registration to core")
         const adapterProtoObj = Adapter.create(adapterObj) // creating a protobuffObj
         const r = await nc.request(`${core_id}.registerAdapter`, Adapter.encode(adapterProtoObj).finish()); // encoding the proto, then performing a request to a topic
         // "awaiting" the reply data
         let registeredAdapter = Adapter.toObject(Adapter.decode(r.data)) // decoding the reply data
         adapter = registeredAdapter; //assing to this adapter some extra information cames from the core
-        console.log(registeredAdapter) // debug print
+        log.debug(registeredAdapter) // debug print
 
         const subSendMessage = nc.subscribe(`${core_id}.${adapter.id}.sendMessage`);
-        console.log(`listening on: ${subSendMessage.getSubject()}`);
+        log.info(`listening on: ${subSendMessage.getSubject()}`);
         (async () => {
             for await (const m of subSendMessage) {
-                nc.publish("adaptersNetwork", m.data)
+                nc_adapter.publish("adaptersNetwork", m.data)
+                log.trace("received Uhura Message from Core, sending on adaptersNetwork");
             }
-            console.log("subscription closed");
+            log.warn("subscription closed");
         })();
 
     }, 2000);
 
 
-    const subAdaptersNetwork = nc.subscribe('adaptersNetwork');
-    console.log(`listening on: ${subAdaptersNetwork.getSubject()}`);
+    const subAdaptersNetwork = nc_adapter.subscribe('adaptersNetwork');
+    log.info(`listening on: ${subAdaptersNetwork.getSubject()}`);
     (async () => {
         for await (const m of subAdaptersNetwork) {
             const dataObj = SendMessageRequest.toObject(SendMessageRequest.decode(m.data))
             if (dataObj.sender.id !== core_id) {
                 if (debug) {
                     m.headers
-                    console.log(`rcv from network ${JSON.stringify(dataObj)}`);
-                    let frame = { sender: dataObj.sender.id, header: m.headers }
-                    linkTable.addFrame();
+                    log.debug(`rcv from network ${JSON.stringify(dataObj)}`);
+
                 }
                 nc.publish(`${core_id}.receivedMessageAdapter`, m.data);
             }
         }
-        console.log("subscription closed");
+        log.warn("subscription closed");
     })();
 
 
 
-    console.log(`Uhura Virtual adapter started, core_id: "${core_id}"`)
+    log.info(`Uhura Virtual adapter started, core_id: "${core_id}"`)
 }
 
 bootsrap();

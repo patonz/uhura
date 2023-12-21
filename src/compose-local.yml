@@ -7,18 +7,21 @@ services:
   nats-netrob:
     image: nats
     ports:
-      - "192.168.50.75:8222:8222"
-      - "192.168.50.75:4222:4222"
-      - "192.168.50.75:6222:6222"
-    command: "--cluster_name NATS-NETROB -c nats-server.conf --cluster nats://0.0.0.0:6222 --http_port 8222"
+      - "192.168.50.187:8222:8222"
+      - "192.168.50.187:4222:4222"
+      - "192.168.50.187:6222:6222"
+    command: "--cluster_name NATS-NETROB -c nats-server.conf --cluster nats://0.0.0.0:6222 --routes=nats://192.168.50.75:6222"
 
   nats-mobile:
     image: nats
     ports:
-      - "192.168.1.99:9222:8222"
-      - "192.168.1.99:5222:4222"
-      - "192.168.1.99:7222:6222"
-    command: "--cluster_name NATS-MOBILE -c nats-server.conf --cluster nats://0.0.0.0:6222 --http_port 9222"
+      - "192.168.1.70:9222:8222"
+      - "192.168.1.70:5222:4222"
+      - "192.168.1.70:7222:6222"
+    command: "--cluster_name NATS-MOBILE -c nats-server.conf --cluster nats://0.0.0.0:6222 --routes=nats://192.168.1.99:7222"
+    depends_on:
+      - nats-netrob
+
   uhura_core:
     #image: patonz/uhura:core_0.1.33-test
     build: 
@@ -27,8 +30,8 @@ services:
     network_mode: host
     command: "node index.js"
     environment:
-      - NATS_SERVER_ADDRESS=nats://192.168.50.75:4222
-      - ID=VINCISGRASSI
+      - NATS_SERVER_ADDRESS=nats://192.168.50.187:4222
+      - ID=BLOOD
       - DEBUG=true
       - CADENCE=2000
     depends_on:
@@ -41,9 +44,9 @@ services:
     network_mode: host
     command: "node index.js"
     environment:
-      - NATS_SERVER_ADDRESS=nats://192.168.50.75:4222
-      - ADAPTER_NATS_SERVER_ADDRESS=nats://192.168.50.75:4222
-      - ID=VINCISGRASSI
+      - NATS_SERVER_ADDRESS=nats://192.168.50.187:4222
+      - ADAPTER_NATS_SERVER_ADDRESS=nats://192.168.50.187:4222
+      - ID=BLOOD
       - DEBUG=true
     depends_on:
       - uhura_core
@@ -56,9 +59,9 @@ services:
     network_mode: host
     command: "node index.js"
     environment:
-      - NATS_SERVER_ADDRESS=nats://192.168.50.75:4222
-      - ADAPTER_NATS_SERVER_ADDRESS=nats://192.168.1.99:5222
-      - ID=VINCISGRASSI
+      - NATS_SERVER_ADDRESS=nats://192.168.50.187:4222
+      - ADAPTER_NATS_SERVER_ADDRESS=nats://192.168.1.70:5222
+      - ID=BLOOD
       - DEBUG=true
     depends_on:
       - uhura_core

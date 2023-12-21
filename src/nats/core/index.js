@@ -19,7 +19,7 @@ const fs = require('fs');
 const stringCodec = StringCodec();
 async function bootstrap() {
 
-    const logger = ToolManager.getLogger("CORE")
+    const logger = ToolManager.getLogger("CORE", "trace")
 
 
     /**
@@ -44,7 +44,15 @@ async function bootstrap() {
 
     /** @type {Object<string, LinkTable>} */
     const linkTables = {}
-    const nc = await connect({ servers: "nats://0.0.0.0:4222", encoding: 'binary' }).catch(error => {
+
+    let natServerAddress = "nats://0.0.0.0:4222"
+
+    if (process.env.NATS_SERVER_ADDRESS) {
+        natServerAddress = process.env.NATS_SERVER_ADDRESS
+    }
+    logger.info(`NATS_SERVER_ADDRESS env: ${natServerAddress}`);
+
+    const nc = await connect({ servers: natServerAddress, encoding: 'binary' }).catch(error => {
         logger.error(error);
     });
 
@@ -62,17 +70,20 @@ async function bootstrap() {
     if (process.env.ID) {
         id = process.env.ID;
     }
+    logger.info(`ID env: ${id}`);
 
     let cadence = 2000;
     if (process.env.CADENCE) {
         cadence = process.env.CADENCE;
     }
+    logger.info(`cadence env:  ${cadence}`);
+
 
     let debug = true;
     if (process.env.DEBUG === "true") {
         debug = true;
     } else debug = false;
-    logger.info(`debug env: %o`, debug);
+    logger.info(`debug env:  ${debug}`);
 
 
 
@@ -127,7 +138,7 @@ async function bootstrap() {
             let adapters = UhuraCore.getAdapterList()
             if (typeof adapter === Adapter) {
                 request.sender.adapterId = adapter.id
-                console.log(`[${subSendMessage.getProcessed()}]: ${JSON.stringify(SendMessageRequest.decode(m.data))}`);
+                logger.info(`[${subSendMessage.getProcessed()}]: ${JSON.stringify(SendMessageRequest.decode(m.data))}`);
 
                 nc.publish(`${id}.${request.sender.adapter_id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
             }
@@ -140,7 +151,7 @@ async function bootstrap() {
     console.log(`listening on: ${subSendMessageText.getSubject()}`);
     (async () => {
         for await (const m of subSendMessageText) {
-            console.log(`[${subSendMessageText.getSubject()}]: ${stringCodec.decode(m.data)}`);
+            logger.info(`[${subSendMessageText.getSubject()}]: ${stringCodec.decode(m.data)}`);
             let request = {
                 message: { text: stringCodec.decode(m.data), type: 0 },
                 priority: 0,
@@ -168,24 +179,24 @@ async function bootstrap() {
             }
 
             let adapters = UhuraCore.getAdapterList()
-            let bestLink = {type : undefined, pdr: 0}
-            
-            for (let type in linkTables){
-                
-                
+            let bestLink = { type: undefined, pdr: 0 }
+
+            for (let type in linkTables) {
+
+
                 /** @type {LinkTable} */
                 let linkTable = linkTables[type];
                 let pdr = linkTable.updateAll();
-                if(pdr && pdr > bestLink.pdr){
+                if (pdr && pdr > bestLink.pdr) {
                     bestLink.type = type;
                     bestLink.pdr = pdr;
-                    
+
                 }
 
             }
             let adapter;
-            for( let adapterCandidate in adapters){
-                if(adapterCandidate.type === type){
+            for (let adapterCandidate in adapters) {
+                if (adapterCandidate.type === type) {
                     adapter = adapterCandidate;
                     break;
                 }
@@ -194,7 +205,7 @@ async function bootstrap() {
 
             if (adapter instanceof Adapter) {
                 request.sender.adapterId = adapter.id
-                console.log(`sending binary to:[${id}.${adapter.id}.sendMessage]`);
+                logger.info(`sending binary to:[${id}.${adapter.id}.sendMessage]`);
                 nc.publish(`${id}.${adapter.id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
             }
 
@@ -219,7 +230,7 @@ async function bootstrap() {
             let createdAdapter = AdapterProto.create(registeredAdapter)
             msg.respond(AdapterProto.encode(createdAdapter).finish());
             console.log("done")
-            linkTables[createdAdapter.type] = LinkTable(100)
+            linkTables[createdAdapter.type] = new LinkTable(100)
         },
     });
 
@@ -261,27 +272,25 @@ async function bootstrap() {
                     }
                     linkTable.addFrame(sender.id, frame)
                 }
+                logger.debug(`received a message.text ${JSON.stringify(request)}`);
             }
 
 
 
             if (request.message.type == 0 || request.message.type == 1) {
                 if (request.message.text) {
-                    if (request.message.text.contains("HB#")) {
-                        //HB RECEIVED, handle for more infos
-                    } else {
-                        if (debug) {
-                            console.log(`received a message.text ${JSON.stringify(request)}`);
-                        }
 
-                    }
+                    
+
+
+
                     nc.publish(`${id}.receivedMessage.text`, stringCodec.encode(request.message.text))
                 }
 
                 if (request.message.binary) {
-                    if (debug) {
-                        console.log(`received a message.binary ${JSON.stringify(request)}`);
-                    }
+
+                    logger.info(`received a message.binary ${JSON.stringify(request)}`);
+
                     nc.publish(`${id}.receivedMessage.binary`, request.message.binary)
                 }
             }
@@ -294,12 +303,13 @@ async function bootstrap() {
 
 
     /**heartbeat calls, basic for now */
+    logger.debug('starting HB process')
     let counter = 0;
     setInterval(() => {
 
         let adapters = UhuraCore.getAdapterList()
 
-        for (adapter in adapters) {
+        for (adapter of adapters) {
 
             let payload = {
                 counter: counter,
@@ -313,11 +323,9 @@ async function bootstrap() {
             }
 
             if (adapter instanceof Adapter) {
-
                 request.sender.adapterId = adapter.id
-                if (debug) {
-                    console.log(`sending heartbeat to ${id}.${adapter.id}.sendMessage`);
-                }
+                logger.debug(`sending heartbeat to ${id}.${adapter.id}.sendMessage`);
+
 
                 nc.publish(`${id}.${adapter.id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
 
@@ -333,7 +341,7 @@ async function bootstrap() {
     }, cadence);
 
     setInterval(() => { }, 1 << 30); // keep alive the process with an infinite interval for an empty function. just avoiding pm2 
-    console.log(`Uhura Core started, id: "${id}"`)
+    logger.info(`Uhura Core started, id: "${id}"`)
 
 };
 
