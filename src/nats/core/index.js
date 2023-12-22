@@ -8,13 +8,14 @@ const UhuraCore = UhuraCorePkg.UhuraCore;
 const Adapter = UhuraCorePkg.Adapter;
 const ToolManager = UhuraCommonPkg.ToolManager;
 const LinkTable = UhuraCommonPkg.LinkTable;
-
+const luxon = require("luxon");
 
 const nats = require('nats');
 const connect = nats.connect;
 const StringCodec = nats.StringCodec;
 const protobuf = require('protobufjs');
 const fs = require('fs');
+const v8 = require('v8');
 
 const stringCodec = StringCodec();
 async function bootstrap() {
@@ -180,30 +181,38 @@ async function bootstrap() {
 
             let adapters = UhuraCore.getAdapterList()
             let bestLink = { type: undefined, pdr: 0 }
-
+           
             for (let type in linkTables) {
-
 
                 /** @type {LinkTable} */
                 let linkTable = linkTables[type];
                 let pdr = linkTable.updateAll();
-                if (pdr && pdr > bestLink.pdr) {
+                console.log('pdr:'+pdr)
+                if (pdr > bestLink.pdr) {
                     bestLink.type = type;
                     bestLink.pdr = pdr;
-
                 }
 
             }
+
+            console.log(bestLink);
             let adapter;
-            for (let adapterCandidate in adapters) {
-                if (adapterCandidate.type === type) {
+            for (let i in adapters) {
+                let adapterCandidate = adapters[i]
+                console.log(adapterCandidate)
+                console.log(bestLink)
+                if (adapterCandidate.type === bestLink.type) {
                     adapter = adapterCandidate;
                     break;
                 }
             }
-
+            console.log(adapter)
+            
+           
 
             if (adapter instanceof Adapter) {
+                let toLog = `snd; ${request.message.type}; ${adapter.type}; ${NaN}; ${bestLink.pdr}; ${NaN}; ${id}; ${v8.serialize(request).length}; ${luxon.DateTime.now().toFormat("dd-MM-yyyy_HH-mm-ss")};`
+                ToolManager.logToFile(toLog, "HB_laptop");
                 request.sender.adapterId = adapter.id
                 logger.info(`sending binary to:[${id}.${adapter.id}.sendMessage]`);
                 nc.publish(`${id}.${adapter.id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
@@ -258,10 +267,11 @@ async function bootstrap() {
                 if (content.cadence) {
                     cadence = content.cadence
                 }
-
+                console.log(source)
                 let linkTable = linkTables[source.type]
+                console.log(linkTable)
                 if (linkTables[source.type] instanceof LinkTable) {
-                    /** @type {Frame} */
+                    /** @type {Frame} */ 
                     let frame = {
                         header: undefined,
                         id: counter,
@@ -270,7 +280,11 @@ async function bootstrap() {
                         timestamp: undefined,
                         cadence: cadence,
                     }
+                    
                     linkTable.addFrame(sender.id, frame)
+                    let pdrAdapter = linkTable.updateAll()
+                    let toLog = `rcv; ${request.message.type}; ${source.type}; ${frame.id}; ${pdrAdapter}; ${frame.cadence}; ${frame.sender.id}; ${v8.serialize(m.data).length}; ${luxon.DateTime.now().toFormat("dd-MM-yyyy_HH-mm-ss")}`
+                    ToolManager.logToFile(toLog, "HB_laptop")
                 }
                 logger.debug(`received a message.text ${JSON.stringify(request)}`);
             }

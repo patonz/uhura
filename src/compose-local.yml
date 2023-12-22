@@ -2,6 +2,8 @@ version: "2"
 volumes:
     uhura-volume:
     fastdds-volume:
+    test-wifi:
+      external: true
 
 services:
   nats-netrob:
@@ -34,6 +36,8 @@ services:
       - ID=BLOOD
       - DEBUG=true
       - CADENCE=2000
+    volumes:
+      - ${PWD}/data:/app/
     depends_on:
       - nats-netrob
   uhura_adapter_netrob:
@@ -46,6 +50,7 @@ services:
     environment:
       - NATS_SERVER_ADDRESS=nats://192.168.50.187:4222
       - ADAPTER_NATS_SERVER_ADDRESS=nats://192.168.50.187:4222
+      - ADAPTER_TYPE=nats_netrob
       - ID=BLOOD
       - DEBUG=true
     depends_on:
@@ -61,6 +66,7 @@ services:
     environment:
       - NATS_SERVER_ADDRESS=nats://192.168.50.187:4222
       - ADAPTER_NATS_SERVER_ADDRESS=nats://192.168.1.70:5222
+      - ADAPTER_TYPE=nats_mobile
       - ID=BLOOD
       - DEBUG=true
     depends_on:

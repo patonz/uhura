@@ -32,7 +32,7 @@ class LinkTable {
     addFrame(node, frame) {
 
 
-        if(!frame.timestamp){
+        if (!frame.timestamp) {
             frame.timestamp = DateTime.now().toMillis();
         }
 
@@ -74,37 +74,37 @@ class LinkTable {
      * 
      * @returns {pdr} final pdr
      */
-    updateAll(){
+    updateAll() {
         let pdr = 0;
         let nodesCount = 0;
         for (const [key, value] of Object.entries(this.link)) {
             let result = this.update(key);
-
-            if(pdr){
-                pdr+=result.pdr;
+            console.log(result)
+            if (result.pdr >= 0) {
+                pdr += result.pdr;
                 nodesCount++;
             }
-    
-          }
 
-          return pdr / nodesCount;
-    }
-
-    update(node){
-        let updateTime = DateTime.now().toMillis();
-        let dataFrame = this.link[node].frames
-        if(dataFrame !== undefined && dataFrame instanceof DataFrame){
-            let cadence = dataFrame['cadence'].values[dataFrame.values.length-1]
-
-            let condition = dataFrame["timestamp"].gt(updateTime-(this.maxFrames*cadence))
-            let query = dataFrame.loc({rows: condition});
-            this.link[node].pdr = (query.values.length / dataFrame.values.length ) * 100;
-            console.log(`${node}: pdr${this.link[node].pdr}% with ${query.values.length} of ${dataFrame.values.length}`);
-            return {node: node, pdr: this.link[node].pdr, entries: query.values.length, maxEntries: dataFrame.values.length}
         }
 
-        return {node: node, pdr: null, entries: null, maxEntries: null}
-        
+        return pdr / nodesCount;
+    }
+
+    update(node) {
+        let updateTime = DateTime.now().toMillis();
+        let dataFrame = this.link[node].frames
+        if (dataFrame !== undefined && dataFrame instanceof DataFrame) {
+            let cadence = dataFrame['cadence'].values[dataFrame.values.length - 1]
+
+            let condition = dataFrame["timestamp"].gt(updateTime - (this.maxFrames * cadence))
+            let query = dataFrame.loc({ rows: condition });
+            this.link[node].pdr = (query.values.length / dataFrame.values.length) * 100;
+            console.log(`${node}: pdr ${this.link[node].pdr}% with ${query.values.length} of ${dataFrame.values.length}`);
+            return { node: node, pdr: this.link[node].pdr, entries: query.values.length, maxEntries: dataFrame.values.length }
+        }
+
+        return { node: node, pdr: undefined, entries: undefined, maxEntries: undefined }
+
     }
 
 }

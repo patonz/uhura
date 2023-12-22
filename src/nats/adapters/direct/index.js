@@ -1,4 +1,5 @@
 const nats = require("nats");
+require('dotenv').config();
 const connect = nats.connect;
 const StringCodec = nats.StringCodec;
 const protobuf = require("protobufjs");
@@ -53,11 +54,18 @@ async function bootsrap() {
     }
 
 
+    let adapter_type = 'nats';
+    if(process.env.ADAPTER_TYPE){
+        adapter_type = process.env.ADAPTER_TYPE
+    }
+
     let debug = true;
     if (process.env.DEBUG === "true") {
         debug = true;
     } else debug = false;
     log.info("debug env: " + debug);
+
+
 
 
     let adapter;
@@ -75,7 +83,7 @@ async function bootsrap() {
     })
 
     setTimeout(async () => {
-        const adapterObj = { name: `${core_id}_adapter`, type: "nats" } // plain object
+        const adapterObj = { name: `${core_id}_adapter`, type: adapter_type } // plain object
         log.info("requesting registration to core")
         const adapterProtoObj = Adapter.create(adapterObj) // creating a protobuffObj
         const r = await nc.request(`${core_id}.registerAdapter`, Adapter.encode(adapterProtoObj).finish()); // encoding the proto, then performing a request to a topic
