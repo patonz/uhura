@@ -3,7 +3,7 @@ import {
 } from "nats";
 import protobuf from 'protobufjs';
 const stringCodec = StringCodec();
-const nc = await connect({ servers: "nats://192.168.50.187", encoding: 'binary' });
+const nc = await connect({ servers: "nats://192.168.50.186", encoding: 'binary' });
 
 let uhura_core_id = `BLOOD` //change this accordingly to the right one
 
@@ -30,4 +30,4 @@ setInterval(() => {
      * testing a generic Uint8 array object as payload.
      */
     nc.publish(`${uhura_core_id}.sendMessage.binary`, Test.encode(testObject).finish());
-}, 3000);
+}, 1000);

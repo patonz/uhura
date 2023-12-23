@@ -91,21 +91,55 @@ class LinkTable {
     }
 
     update(node) {
-        let updateTime = DateTime.now().toMillis();
-        let dataFrame = this.link[node].frames
-        if (dataFrame !== undefined && dataFrame instanceof DataFrame) {
-            let cadence = dataFrame['cadence'].values[dataFrame.values.length - 1]
-
-            let condition = dataFrame["timestamp"].gt(updateTime - (this.maxFrames * cadence))
-            let query = dataFrame.loc({ rows: condition });
-            this.link[node].pdr = (query.values.length / dataFrame.values.length) * 100;
-            console.log(`${node}: pdr ${this.link[node].pdr}% with ${query.values.length} of ${dataFrame.values.length}`);
-            return { node: node, pdr: this.link[node].pdr, entries: query.values.length, maxEntries: dataFrame.values.length }
+        const TEN_SECONDS = 10000; // 10 seconds in milliseconds
+        let dataFrame = this.link[node].frames;
+    
+        if (dataFrame !== undefined && dataFrame instanceof DataFrame && dataFrame.values.length > 0) {
+            let currentTimestamp = DateTime.now().toMillis();
+    
+            // Filter the DataFrame for the last 10 seconds
+            let conditionReceiver = dataFrame["timestamp"].gt(currentTimestamp - TEN_SECONDS);
+            let recentFrames = dataFrame.loc({ rows: conditionReceiver });
+    
+            // Find the latest cadence that is not undefined
+            let lastDefinedCadence;
+            for (let i = dataFrame.values.length - 1; i >= 0; i--) {
+                if (dataFrame['cadence'].values[i] !== undefined) {
+                    lastDefinedCadence = dataFrame['cadence'].values[i];
+                    break;
+                }
+            }
+            lastDefinedCadence = lastDefinedCadence || 1000; // Fallback if no defined cadence found
+    
+            // Calculate expected number of frames
+            let expectedFrames = TEN_SECONDS / lastDefinedCadence;
+    
+            // Calculate PDR
+            let pdr = (recentFrames.values.length / expectedFrames) * 100;
+            pdr = Math.min(pdr, 100); // Ensure PDR does not exceed 100%
+    
+            console.log(`${node}: PDR ${pdr}% with ${recentFrames.values.length} recent frames out of ${expectedFrames} expected frames`);
+            return { 
+                node: node, 
+                pdr: pdr, 
+                recentEntries: recentFrames.values.length, 
+                expectedEntries: expectedFrames 
+            };
         }
-
-        return { node: node, pdr: undefined, entries: undefined, maxEntries: undefined }
-
+    
+        return { 
+            node: node, 
+            pdr: undefined, 
+            recentEntries: undefined, 
+            expectedEntries: undefined 
+        };
     }
+    
+    
+    
+    
+    
+    
 
 }
 

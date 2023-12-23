@@ -14,7 +14,7 @@ message Message {
 enum Type {
     UNKNOWN = 0;
     GENERIC = 1;
-    HEARTBEAT=2;
+    LINK=2;
     ERROR=3;
     SERVICE=4;
 }

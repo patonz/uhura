@@ -9,9 +9,9 @@ services:
   nats-netrob:
     image: nats
     ports:
-      - "192.168.50.187:8222:8222"
-      - "192.168.50.187:4222:4222"
-      - "192.168.50.187:6222:6222"
+      - "192.168.50.186:8222:8222"
+      - "192.168.50.186:4222:4222"
+      - "192.168.50.186:6222:6222"
     command: "--cluster_name NATS-NETROB -c nats-server.conf --cluster nats://0.0.0.0:6222 --routes=nats://192.168.50.75:6222"
 
   nats-mobile:
@@ -48,7 +48,7 @@ services:
     network_mode: host
     command: "node index.js"
     environment:
-      - NATS_SERVER_ADDRESS=nats://192.168.50.187:4222
+      - NATS_SERVER_ADDRESS=nats://192.168.50.186:4222
       - ADAPTER_NATS_SERVER_ADDRESS=nats://192.168.50.187:4222
       - ADAPTER_TYPE=nats_netrob
       - ID=BLOOD
@@ -64,7 +64,7 @@ services:
     network_mode: host
     command: "node index.js"
     environment:
-      - NATS_SERVER_ADDRESS=nats://192.168.50.187:4222
+      - NATS_SERVER_ADDRESS=nats://192.168.50.186:4222
       - ADAPTER_NATS_SERVER_ADDRESS=nats://192.168.1.70:5222
       - ADAPTER_TYPE=nats_mobile
       - ID=BLOOD

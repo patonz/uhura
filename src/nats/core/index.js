@@ -1,6 +1,9 @@
 
 
-
+/**
+ * Heartbeat system works in broadcasting mode.
+ * for the latency check system, the pong goes back in broadcast resulting a useless packet for other nodes.
+ */
 const UhuraCorePkg = require('uhura_core');
 const UhuraCommonPkg = require("uhura_common");
 const appRoot = require('app-root-path');
@@ -181,13 +184,13 @@ async function bootstrap() {
 
             let adapters = UhuraCore.getAdapterList()
             let bestLink = { type: undefined, pdr: 0 }
-           
+
             for (let type in linkTables) {
 
                 /** @type {LinkTable} */
                 let linkTable = linkTables[type];
                 let pdr = linkTable.updateAll();
-                console.log('pdr:'+pdr)
+                console.log('pdr:' + pdr)
                 if (pdr > bestLink.pdr) {
                     bestLink.type = type;
                     bestLink.pdr = pdr;
@@ -207,12 +210,12 @@ async function bootstrap() {
                 }
             }
             console.log(adapter)
-            
-           
+
+
 
             if (adapter instanceof Adapter) {
-                let toLog = `snd; ${request.message.type}; ${adapter.type}; ${NaN}; ${bestLink.pdr}; ${NaN}; ${id}; ${v8.serialize(request).length}; ${luxon.DateTime.now().toFormat("dd-MM-yyyy_HH-mm-ss")};`
-                ToolManager.logToFile(toLog, "HB_laptop");
+                let toLog = `snd; ${request.message.type}; ${adapter.type}; ${'msg_binary'}; ${NaN}; ${NaN}; ${bestLink.pdr}; ${NaN}; ${id}; ${v8.serialize(request).length}; ${luxon.DateTime.now().toMillis()}`
+                ToolManager.logToFile(toLog, "HB_Ping_laptop");
                 request.sender.adapterId = adapter.id
                 logger.info(`sending binary to:[${id}.${adapter.id}.sendMessage]`);
                 nc.publish(`${id}.${adapter.id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
@@ -267,44 +270,72 @@ async function bootstrap() {
                 if (content.cadence) {
                     cadence = content.cadence
                 }
+
+
                 console.log(source)
                 let linkTable = linkTables[source.type]
                 console.log(linkTable)
                 if (linkTables[source.type] instanceof LinkTable) {
-                    /** @type {Frame} */ 
+                    /** @type {Frame} */
                     let frame = {
                         header: undefined,
                         id: counter,
                         sender: sender.id,
                         rssi: undefined,
-                        timestamp: undefined,
+                        timestamp: content.timestamp,
                         cadence: cadence,
                     }
-                    
+
                     linkTable.addFrame(sender.id, frame)
                     let pdrAdapter = linkTable.updateAll()
-                    let toLog = `rcv; ${request.message.type}; ${source.type}; ${frame.id}; ${pdrAdapter}; ${frame.cadence}; ${frame.sender.id}; ${v8.serialize(m.data).length}; ${luxon.DateTime.now().toFormat("dd-MM-yyyy_HH-mm-ss")}`
-                    ToolManager.logToFile(toLog, "HB_laptop")
+                    let toLog = `rcv; ${request.message.type}; ${source.type}; ${content.subtype}; ${content.timestamp}; ${content.counter}; ${pdrAdapter}; ${content.cadence}; ${frame.sender.id}; ${v8.serialize(m.data).length}; ${luxon.DateTime.now().toMillis()}`
+                    ToolManager.logToFile(toLog, "HB_Ping_laptop")
                 }
                 logger.debug(`received a message.text ${JSON.stringify(request)}`);
+
+
+                if (content.subtype === "ping") {
+                    let list = UhuraCore.getAdapterList()
+                    for (let adapter of list) {
+                        if (adapter.type === source.type) {
+                            let subtype = "pong";
+                            let payload = {
+                                counter: content.counter,
+                                cadence: NaN,
+                                timestamp: luxon.DateTime.now().toMillis(),
+                                subtype: subtype
+                            }
+                            let request = {
+                                message: { text: JSON.stringify(payload), type: 2 },
+                                priority: 0,
+                                sender: { id: id, adapterId: adapter.id },
+                                source: adapter
+                            }
+
+                            if (adapter instanceof Adapter) {
+                                request.sender.adapterId = adapter.id
+                                logger.debug(`sending pong to ${id}.${adapter.id}.sendMessage`);
+                                let toLog = `snd; ${request.message.type}; ${source.type}; ${payload.subtype}; ${payload.timestamp}; ${payload.counter}; ${linkTable.updateAll()}; ${payload.cadence}; ${id}; ${v8.serialize(request).length}; ${luxon.DateTime.now().toMillis()}`
+                                ToolManager.logToFile(toLog, "HB_Ping_laptop")
+                                nc.publish(`${id}.${adapter.id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
+
+                            }
+                            break;
+                        }
+
+                    }
+                }
             }
 
 
 
             if (request.message.type == 0 || request.message.type == 1) {
                 if (request.message.text) {
-
-                    
-
-
-
                     nc.publish(`${id}.receivedMessage.text`, stringCodec.encode(request.message.text))
                 }
 
                 if (request.message.binary) {
-
                     logger.info(`received a message.binary ${JSON.stringify(request)}`);
-
                     nc.publish(`${id}.receivedMessage.binary`, request.message.binary)
                 }
             }
@@ -324,10 +355,15 @@ async function bootstrap() {
         let adapters = UhuraCore.getAdapterList()
 
         for (adapter of adapters) {
-
+            let subtype = "HB";
+            if (counter % 5 === 0) {
+                subtype = "ping"
+            }
             let payload = {
                 counter: counter,
-                cadence: cadence
+                cadence: cadence,
+                timestamp: luxon.DateTime.now().toMillis(),
+                subtype: subtype
             }
             let request = {
                 message: { text: JSON.stringify(payload), type: 2 },
@@ -338,8 +374,9 @@ async function bootstrap() {
 
             if (adapter instanceof Adapter) {
                 request.sender.adapterId = adapter.id
-                logger.debug(`sending heartbeat to ${id}.${adapter.id}.sendMessage`);
-
+                logger.debug(`sending ${subtype} to ${id}.${adapter.id}.sendMessage`);
+                let toLog = `snd; ${request.message.type}; ${request.source.type}; ${subtype}; ${payload.timestamp}; ${payload.counter}; ${NaN}; ${payload.cadence}; ${id}; ${v8.serialize(request).length}; ${luxon.DateTime.now().toMillis()}`
+                ToolManager.logToFile(toLog, "HB_Ping_laptop")
 
                 nc.publish(`${id}.${adapter.id}.sendMessage`, SendMessageRequest.encode(SendMessageRequest.create(request)).finish())
 
