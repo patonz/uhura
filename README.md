@@ -20,6 +20,9 @@ The library demonstrates the possibility of creating custom adapters for M2M not
 
 The project is still under development. Refer to papers or PhD thesis for more details.
 
+Leonardo Montecchiari Ph.D
+[Thesis](https://scholar.google.com/citations?view_op=view_citation&hl=it&user=C477N88AAAAJ&citation_for_view=C477N88AAAAJ:UeHWp8X0CEIC)
+
 ## Installation and Deployment Example
 
 The best way is to use the all-in-one Dockerfile where a Uhura cluster over NATS.io can be easily deployed.
