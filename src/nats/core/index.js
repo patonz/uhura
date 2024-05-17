@@ -175,7 +175,7 @@ async function bootstrap() {
     console.log(`listening on: ${subSendMessageBinary.getSubject()}`);
     (async () => {
         for await (const m of subSendMessageBinary) {
-            console.log(`[${subSendMessageBinary.getSubject()}]: ${JSON.stringify(m.data)}`);
+           logger.debug(`[${subSendMessageBinary.getSubject()}]: ${JSON.stringify(m.data)}`);
             let request = {
                 message: { binary: m.data, type: 0 },
                 priority: 0,
@@ -183,22 +183,23 @@ async function bootstrap() {
             }
 
             let adapters = UhuraCore.getAdapterList()
+            
             let bestLink = { type: undefined, pdr: 0 }
-
+            
             for (let type in linkTables) {
-
+                //console.log(type)
                 /** @type {LinkTable} */
                 let linkTable = linkTables[type];
                 let pdr = linkTable.updateAll();
-                console.log('pdr:' + pdr)
-                if (pdr > bestLink.pdr) {
+                //console.log('pdr:' + pdr)
+                if (pdr >= bestLink.pdr) {
                     bestLink.type = type;
                     bestLink.pdr = pdr;
                 }
 
             }
 
-            console.log(bestLink);
+           // console.log(bestLink);
             let adapter;
             for (let i in adapters) {
                 let adapterCandidate = adapters[i]
@@ -272,9 +273,9 @@ async function bootstrap() {
                 }
 
 
-                console.log(source)
+                //console.log(source)
                 let linkTable = linkTables[source.type]
-                console.log(linkTable)
+                //console.log(linkTable)
                 if (linkTables[source.type] instanceof LinkTable) {
                     /** @type {Frame} */
                     let frame = {
@@ -286,7 +287,7 @@ async function bootstrap() {
                         cadence: cadence,
                     }
 
-                    linkTable.addFrame(sender.id, frame)
+                    //linkTable.addFrame(sender.id, frame)
                     let pdrAdapter = linkTable.updateAll()
                     let toLog = `rcv; ${request.message.type}; ${source.type}; ${content.subtype}; ${content.timestamp}; ${content.counter}; ${pdrAdapter}; ${content.cadence}; ${frame.sender.id}; ${v8.serialize(m.data).length}; ${luxon.DateTime.now().toMillis()}`
                     ToolManager.logToFile(toLog, "HB_Ping_laptop")

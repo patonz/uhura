@@ -1,5 +1,5 @@
 const UHURA_CORE_ID = process.env.UHURA_CORE_ID
-const NATS_SERVER = process.env.NATS_SERVER
+const NATS_SERVER = process.env.NATS_SERVER_ADDRESS
 const SYNC_DELAY = process.env.SYNC_DELAY
 const TEST = process.env.TEST
 const MAX_NODES = process.env.MAX_NODES
@@ -10,6 +10,7 @@ module.exports = {
     script: './nats/core/index.js',
     env: {
       ID: `${UHURA_CORE_ID}`,
+      NATS_SERVER_ADDRESS: `${NATS_SERVER}`,
       DEBUG: false
     },
   }, {
@@ -17,9 +18,11 @@ module.exports = {
     script: './nats/adapters/direct/index.js',
     env: {
       ID: `${UHURA_CORE_ID}`,
+      NATS_SERVER_ADDRESS: `${NATS_SERVER}`,
       DEBUG: false
     },
-  }, {
+  }, 
+  /*{
     name: "gateway",
     script: 'npm',
     cwd: "./nats/packages/gateway/",
@@ -28,7 +31,8 @@ module.exports = {
       NATS_SERVER: "0.0.0.0:4222",
       UHURA_CORE_ID: `${UHURA_CORE_ID}`
     },
-  }, {
+  }, 
+  {
     name: "discovery",
     script: 'npm',
     cwd:"./nats/packages/uhura-discovery/",
@@ -41,5 +45,6 @@ module.exports = {
       MAX_NODES: `${MAX_NODES}`,
       NODES: `${NODES}`
     },
-  }],
+  }*/
+],
 };

@@ -3,9 +3,9 @@ import {
 } from "nats";
 import protobuf from 'protobufjs';
 const stringCodec = StringCodec();
-const nc = await connect({ servers: "nats://192.168.50.186", encoding: 'binary' });
+const nc = await connect({ servers: "nats://0.0.0.0:4222", encoding: 'binary' });
 
-let uhura_core_id = `BLOOD` //change this accordingly to the right one
+let uhura_core_id = `SENDER_ID` //change this accordingly to the right one
 
 // setInterval(() => {
 //     const messageText = `Hey! im using uhura!`

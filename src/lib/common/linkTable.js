@@ -1,6 +1,7 @@
 const dfd = require("danfojs");
 const { DataFrame } = require("danfojs/dist/danfojs-base");
 const { DateTime } = require("luxon");
+const { evaluate } = require('mathjs');
 
 
 
@@ -79,15 +80,15 @@ class LinkTable {
         let nodesCount = 0;
         for (const [key, value] of Object.entries(this.link)) {
             let result = this.update(key);
-            console.log(result)
+            //console.log(result)
             if (result.pdr >= 0) {
                 pdr += result.pdr;
                 nodesCount++;
             }
 
         }
-
-        return pdr / nodesCount;
+        let result = evaluate(`${pdr} / ${nodesCount}`)
+        return isNaN(result) || result === undefined ? 0 : result;
     }
 
     update(node) {
@@ -118,7 +119,7 @@ class LinkTable {
             let pdr = (recentFrames.values.length / expectedFrames) * 100;
             pdr = Math.min(pdr, 100); // Ensure PDR does not exceed 100%
     
-            console.log(`${node}: PDR ${pdr}% with ${recentFrames.values.length} recent frames out of ${expectedFrames} expected frames`);
+            //console.log(`${node}: PDR ${pdr}% with ${recentFrames.values.length} recent frames out of ${expectedFrames} expected frames`);
             return { 
                 node: node, 
                 pdr: pdr, 

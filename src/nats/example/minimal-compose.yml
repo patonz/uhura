@@ -1,0 +1,65 @@
+version: "2"
+
+services:
+  nats:
+    image: nats
+    ports:
+      - "0.0.0.0:8222:8222"
+      - "0.0.0.0:4222:4222"
+      - "0.0.0.0:6222:6222"
+    command: "--cluster_name NATS-NETROB -c nats-server.conf --cluster nats://0.0.0.0:6222"
+
+  uhura_core_sender:
+    image: patonz/uhura:core_0.1.21-test
+    network_mode: host
+    command: "node index.js"
+    environment:
+      - NATS_SERVER_ADDRESS=nats://0.0.0.0:4222
+      - ID=SENDER
+      - DEBUG=true
+      - CADENCE=2000
+    volumes:
+      - ${PWD}/data:/app/
+    depends_on:
+      - nats
+  uhura_adapter_sender:
+    image: patonz/uhura:adapter_nats_0.1.21-test
+    network_mode: host
+    command: "node index.js"
+    environment:
+      - NATS_SERVER_ADDRESS=nats://0.0.0.0:4222
+      - ADAPTER_NATS_SERVER_ADDRESS=nats://0.0.0.0:4222
+      - ADAPTER_TYPE=direct
+      - ID=SENDER
+      - DEBUG=true
+    depends_on:
+      - uhura_core_sender
+      - nats
+
+
+  uhura_core_receiver:
+    image: patonz/uhura:core_0.1.21-test
+    network_mode: host
+    command: "node index.js"
+    environment:
+      - NATS_SERVER_ADDRESS=nats://0.0.0.0:4222
+      - ID=receiver
+      - DEBUG=true
+      - CADENCE=2000
+    volumes:
+      - ${PWD}/data:/app/
+    depends_on:
+      - nats
+  uhura_adapter_receiver:
+    image: patonz/uhura:adapter_nats_0.1.21-test
+    network_mode: host
+    command: "node index.js"
+    environment:
+      - NATS_SERVER_ADDRESS=nats://0.0.0.0:4222
+      - ADAPTER_NATS_SERVER_ADDRESS=nats://0.0.0.0:4222
+      - ADAPTER_TYPE=direct
+      - ID=RECEIVER
+      - DEBUG=true
+    depends_on:
+      - uhura_core_receiver
+      - nats

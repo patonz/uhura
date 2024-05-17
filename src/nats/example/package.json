@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "nats": "^2.7.1",
+    "nats": "^2.25.0",
     "protobufjs": "^6.11.2"
   }
 }
