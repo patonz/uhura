@@ -26,13 +26,13 @@ RUN npm install
 WORKDIR /app/nats/adapters/direct
 RUN npm install
 
-#gateway
-WORKDIR /app/nats/packages/gateway
-RUN npm install
+# #gateway
+# WORKDIR /app/nats/packages/gateway
+# RUN npm install
 
-#discovery
-WORKDIR /app/nats/packages/uhura-discovery
-RUN npm install
+# #discovery
+# WORKDIR /app/nats/packages/uhura-discovery
+# RUN npm install
 
 WORKDIR /app
 
