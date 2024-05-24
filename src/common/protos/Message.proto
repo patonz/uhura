@@ -7,7 +7,7 @@ message Message {
         bytes binary = 2;
     }
     
-    required Type type =3;
+    Type type =3;
 }
 
 

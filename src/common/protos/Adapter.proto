@@ -3,8 +3,8 @@ package uhura;
 
 message Adapter {
     string id = 1;
-    required string name = 2;
-    required string type = 3;
+    string name = 2;
+    string type = 3;
     string link_status = 4;
 
 }
