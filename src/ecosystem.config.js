@@ -13,38 +13,51 @@ module.exports = {
       NATS_SERVER_ADDRESS: `${NATS_SERVER}`,
       DEBUG: false
     },
-  }, {
-    name: "adapter_nats",
-    script: './nats/adapters/direct/index.js',
+  },
+  {
+    name: "adapter_zenoh",
+    script: 'cargo',
+    args: 'run',
+    interpreter: 'none',
+    cwd: '/app/nats/adapters/zenoh',
     env: {
       ID: `${UHURA_CORE_ID}`,
       NATS_SERVER_ADDRESS: `${NATS_SERVER}`,
       DEBUG: false
     },
-  }, 
-  /*{
-    name: "gateway",
-    script: 'npm',
-    cwd: "./nats/packages/gateway/",
-    args:"run start",
-    env: {
-      NATS_SERVER: "0.0.0.0:4222",
-      UHURA_CORE_ID: `${UHURA_CORE_ID}`
-    },
-  }, 
-  {
-    name: "discovery",
-    script: 'npm',
-    cwd:"./nats/packages/uhura-discovery/",
-    args:"run start",
-    env: {
-      NATS_SERVER: "0.0.0.0:4222",
-      UHURA_CORE_ID: `${UHURA_CORE_ID}`,
-      SYNC_DELAY: `${SYNC_DELAY}`,
-      TEST: `${TEST}`,
-      MAX_NODES: `${MAX_NODES}`,
-      NODES: `${NODES}`
-    },
-  }*/
-],
+  }
+    /*{
+      name: "adapter_nats",
+      script: './nats/adapters/direct/index.js',
+      env: {
+        ID: `${UHURA_CORE_ID}`,
+        NATS_SERVER_ADDRESS: `${NATS_SERVER}`,
+        DEBUG: false
+      },
+    }, 
+    {
+      name: "gateway",
+      script: 'npm',
+      cwd: "./nats/packages/gateway/",
+      args:"run start",
+      env: {
+        NATS_SERVER: "0.0.0.0:4222",
+        UHURA_CORE_ID: `${UHURA_CORE_ID}`
+      },
+    }, 
+    {
+      name: "discovery",
+      script: 'npm',
+      cwd:"./nats/packages/uhura-discovery/",
+      args:"run start",
+      env: {
+        NATS_SERVER: "0.0.0.0:4222",
+        UHURA_CORE_ID: `${UHURA_CORE_ID}`,
+        SYNC_DELAY: `${SYNC_DELAY}`,
+        TEST: `${TEST}`,
+        MAX_NODES: `${MAX_NODES}`,
+        NODES: `${NODES}`
+      },
+    }*/
+  ],
 };
