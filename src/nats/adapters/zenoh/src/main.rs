@@ -1,18 +1,15 @@
 mod proto;
 
-use async_nats::Client;
 use dotenv::dotenv;
 use futures::stream::StreamExt;
 use log::{debug, error, info, warn};
 use once_cell::sync::Lazy;
 use prost::Message as ProstMessage;
 use proto::uhura::{Adapter, SendMessageRequest};
-use std::clone;
 use std::env;
 use std::sync::Arc;
 use std::sync::Mutex;
 use tokio::signal;
-use tokio::time::{sleep, Duration};
 use zenoh::buffers::ZBuf;
 
 use zenoh::prelude::config;
@@ -24,13 +21,13 @@ static GLOBAL_ADAPTER: Lazy<Mutex<Option<Arc<Adapter>>>> = Lazy::new(|| Mutex::n
 async fn main() -> Result<(), async_nats::Error> {
 
     // Use println! to confirm logger initialization
-   
+    dotenv().ok();
 
     let nats_url = env::var("NATS_URL").unwrap_or_else(|_| "localhost:4222".to_string());
     let core_id = env::var("ID").unwrap_or_else(|_| "AlphaCore".to_string());
-    let log_level = env::var("RUST_LOG").unwrap_or_else(|_| "debug".to_string());
+    let _log_level = env::var("RUST_LOG").unwrap_or_else(|_| "debug".to_string());
 
-    dotenv().ok();
+    
     env_logger::init();
     info!("Logger initialized");
 
@@ -54,6 +51,8 @@ async fn main() -> Result<(), async_nats::Error> {
     /*zenoh session connection */
     let session = Arc::new(zenoh::open(config::default()).res().await.unwrap());
 
+    println!("Connected to ZENOH server");
+
     let response = client
         .request(format!("{}.registerAdapter", core_id), buf.into())
         .await?;
@@ -68,7 +67,7 @@ async fn main() -> Result<(), async_nats::Error> {
     let adapter_id = replied_adapter.id.clone();
     let send_message_topic = format!("{}.{}.sendMessage", core_id, adapter_id);
 
-    let client_clone = Arc::clone(&client);
+    let _client_clone = Arc::clone(&client);
     let mut sub_send_message = client.subscribe(send_message_topic.clone()).await?;
     debug!("Listening on: {}", send_message_topic); // Use println! for debugging
 
@@ -88,8 +87,8 @@ async fn main() -> Result<(), async_nats::Error> {
         warn!("Subscription closed: {}", send_message_topic);
     });
 
-    /**for debugging reason, keep nats connector ready */
-    let mut sub_adapters_network = session
+    /* for debugging reason, keep nats connector ready */
+    let sub_adapters_network = session
         .declare_subscriber("adaptersNetwork")
         .res()
         .await
