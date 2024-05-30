@@ -1,4 +1,6 @@
-FROM node:16-alpine
+# FROM node:16-alpine
+# FROM node:16-alpine
+FROM ubuntu:22.04 as build
 
 # Environment variables for Rust installation
 ENV UDEV=on
@@ -7,13 +9,20 @@ ENV CARGO_HOME=/usr/local/cargo
 ENV PATH=/usr/local/cargo/bin:$PATH
 
 # Install dependencies
-RUN apk add --no-cache curl
-RUN apk add --no-cache gettext
-RUN apk add --no-cache musl-dev build-base
-RUN apk add --no-cache unzip
-RUN apk add --no-cache protoc
-RUN apk add --no-cache supervisor
 
+# NVM
+ENV NVM_DIR /usr/local/nvm
+ENV NODE_VERSION v18.20.3
+RUN apt update && apt install -y curl
+RUN mkdir -p /usr/local/nvm
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+RUN /bin/bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use --delete-prefix $NODE_VERSION"
+ENV NODE_PATH $NVM_DIR/versions/node/$NODE_VERSION/bin
+ENV PATH $NODE_PATH:$PATH
+
+
+RUN apt update && apt install -y gettext musl-dev unzip  supervisor protobuf-compiler nano tmux 
+# protoc build-base
 # Install PM2
 RUN npm install pm2@latest -g
 
@@ -26,9 +35,12 @@ RUN rustup default stable
 RUN curl -sf https://binaries.nats.dev/nats-io/nats-server/v2@latest | sh
 
 # Install Zenoh
-RUN curl -L https://github.com/eclipse-zenoh/zenoh/releases/download/0.11.0-rc.3/zenoh-0.11.0-rc.3-x86_64-unknown-linux-musl-standalone.zip -o zenoh.zip \
-    && unzip zenoh.zip -d /usr/local/bin \
-    && rm zenoh.zip
+# RUN curl -L https://github.com/eclipse-zenoh/zenoh/releases/download/0.11.0-rc.3/zenoh-0.11.0-rc.3-x86_64-unknown-linux-musl-standalone.zip -o zenoh.zip \
+    # && unzip zenoh.zip -d /usr/local/bin \
+    # && rm zenoh.zip
+RUN echo "deb [trusted=yes] https://download.eclipse.org/zenoh/debian-repo/ /" | tee -a /etc/apt/sources.list.d/zenoh.list > /dev/null
+RUN apt update
+RUN apt install -y zenoh
 
 # Set up application directories and install Node.js dependencies
 WORKDIR /app
@@ -37,20 +49,18 @@ COPY . .
 COPY nats.conf.tpl /app/nats.conf.tpl
 
 # Core installation
-WORKDIR /app/lib/core
-RUN npm install
+# WORKDIR
+RUN cd  /app/lib/core && npm install
 
-WORKDIR /app/lib/common
-RUN npm install
+# WORKDIR /app/lib/common
+RUN cd /app/lib/common && npm install
 
-WORKDIR /app/nats/core
-RUN npm install
+# WORKDIR /app/nats/core
+RUN cd /app/nats/core && npm install
 
 # Adapter installation
-WORKDIR /app/nats/adapters/zenoh
-RUN chmod +x start.sh
-
-RUN cargo build
+# WORKDIR /app/nats/adapters/zenoh
+RUN cd /app/nats/adapters/zenoh && chmod +x start.sh && cargo build
 
 # # Uncomment if needed
 # # Gateway

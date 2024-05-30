@@ -3,5 +3,6 @@
         "options": [
             "--proto_path=${workspaceRoot}/src/common/protos",
         ]
-    }
+    },
+    "ros.distro": "noetic"
 }

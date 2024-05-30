@@ -1,0 +1,1 @@
+docker run --rm -e "NATS_SERVER_ADDRESS=0.0.0.0:4222" -e "ID=SENDER" -e "NATS_CLUSTER_PORT=6222" -e "ROUTES=" -e "UHURA_CORE_ID=SENDER_ID" -p 4222:4222 -p 6222:6222 --name sender_nats -it uhura-full bash
