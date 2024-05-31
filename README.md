@@ -33,22 +33,30 @@ First, download this repo and then navigate inside the `src` folder. At this poi
 docker build -t uhura -f uhura.Dockerfile .
 ```
 
-This container will run a NATS server, a Uhura core, and an adapter over TCP/IP.
+This container will run a NATS server, a Uhura core, and an adapter over TCP/IP based on Zenoh protocol so will run a peer as well.
 
 Now, decide how many Uhura instances are needed for your test. As a first test, consider implementing a simple sender/receiver like the one inside the `src/nats/example` folder.
+
+Since Zenoh uses Multicast as default scouting mode, we dont need to create a cluster but instead we must put all the containers in the same bridge network.
+So create one network like this:
+```sh
+docker network create --driver bridge uhura-multicast-network 
+```
+
 
 Let's run them with the following commands:
 
 ##### For the Sender
 
 ```sh
-docker run -e "NATS_SERVER_ADDRESS=0.0.0.0:4222" -e "ID=SENDER" -e "NATS_CLUSTER_PORT=6222" -e "ROUTES=" -e "UHURA_CORE_ID=SENDER_ID" -p 4222:4222 -p 6222:6222 --name sender_nats uhura
+docker run -e "NATS_SERVER_ADDRESS=0.0.0.0:4222" -e "ID=SENDER" -e "NATS_CLUSTER_PORT=6222" -e "ROUTES=" -e "UHURA_CORE_ID=SENDER" -p 4222:4222 --network uhura-multicast-network --name sender_nats --rm uhura
 ```
 
 ##### For the Receiver
 
 ```sh
-docker run -e "NATS_SERVER_ADDRESS=0.0.0.0:4222" -e "ID=RECEIVER" -e "NATS_CLUSTER_PORT=6222" -e "ROUTES='nats-route://sender_nats:6222'" -e "UHURA_CORE_ID=RECEIVER_ID" -p 4322:4222 -p 6322:6222 --name receiver_nats --link sender_nats:sender_nats uhura
+docker run -e "NATS_SERVER_ADDRESS=0.0.0.0:4222" -e "ID=RECEIVER" -e "NATS_CLUSTER_PORT=6222" -e "ROUTES=" -e "UHURA_CORE_ID=RECEIVER" -p 4222:4222 --network uhura-multicast-network --name receiver_nats --rm uhura
+
 ```
 
 Where:
