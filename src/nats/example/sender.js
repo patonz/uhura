@@ -5,7 +5,7 @@ import protobuf from 'protobufjs';
 const stringCodec = StringCodec();
 const nc = await connect({ servers: "nats://0.0.0.0:4222", encoding: 'binary' });
 
-let uhura_core_id = `SENDER_ID` //change this accordingly to the right one
+let uhura_core_id = `SENDER` //change this accordingly to the right one
 
 // setInterval(() => {
 //     const messageText = `Hey! im using uhura!`
@@ -30,4 +30,5 @@ setInterval(() => {
      * testing a generic Uint8 array object as payload.
      */
     nc.publish(`${uhura_core_id}.sendMessage.binary`, Test.encode(testObject).finish());
+   
 }, 1000);

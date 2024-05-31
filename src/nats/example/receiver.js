@@ -3,9 +3,9 @@ import {
 } from "nats";
 import protobuf from 'protobufjs';
 const stringCodec = StringCodec();
-const nc = await connect({ servers: "nats://0.0.0.0:4222", encoding: 'binary' });
+const nc = await connect({ servers: "nats://0.0.0.0:4322", encoding: 'binary' });
 
-let uhura_core_id = `RECEIVER_ID` //change this accordingly to the right one
+let uhura_core_id = `RECEIVER` //change this accordingly to the right one
 
 const subText = nc.subscribe(`${uhura_core_id}.receivedMessage.text`);
 (async () => {
