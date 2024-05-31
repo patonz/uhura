@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:20-alpine
 
 # Environment variables for Rust installation
 ENV UDEV=on

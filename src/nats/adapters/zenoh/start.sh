@@ -8,5 +8,6 @@ export ID="$ID"
 export ROUTES="$ROUTES"
 export RUST_LOG="debug"
 
+cd /app/nats/adapters/zenoh || exit
 # Start the Rust application
 exec cargo run
