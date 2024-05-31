@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ip": "^2.0.1",
     "nats": "^2.25.0",
     "protobufjs": "^6.11.2"
   }

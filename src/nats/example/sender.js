@@ -2,7 +2,7 @@ import {
     connect, StringCodec
 } from "nats";
 import protobuf from 'protobufjs';
-import { networkInterfaces } from "os";
+import ip  from 'ip';
 const stringCodec = StringCodec();
 
 let natServerAddress = "nats://0.0.0.0:4222"
@@ -32,15 +32,7 @@ let uhura_core_id = id //change this accordingly to the right one
 
 
 
-let containerIp = '';
-
-for (const [name, interfaces] of Object.entries(networkInterfaces())) {
-  interfaces.forEach(iface => {
-    if (!iface.internal && iface.family === 'IPv4' && name === 'eth0') {
-      containerIp = iface.address;
-    }
-  });
-}
+let containerIp = ip.address();
 
 console.log('Container IP:', containerIp);
 

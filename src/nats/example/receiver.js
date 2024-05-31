@@ -3,9 +3,24 @@ import {
 } from "nats";
 import protobuf from 'protobufjs';
 const stringCodec = StringCodec();
-const nc = await connect({ servers: "nats://0.0.0.0:4322", encoding: 'binary' });
 
-let uhura_core_id = `RECEIVER` //change this accordingly to the right one
+let natServerAddress = "nats://0.0.0.0:4222"
+if (process.env.NATS_SERVER_ADDRESS) {
+    natServerAddress = process.env.NATS_SERVER_ADDRESS
+}
+console.log(`NATS_SERVER_ADDRESS env: ${natServerAddress}`);
+
+
+let id = "AlphaCore";
+if (process.env.ID) {
+    id = process.env.ID;
+}
+console.log(`ID env: ${id}`);
+
+
+const nc = await connect({ servers: natServerAddress, encoding: 'binary' });
+
+let uhura_core_id = id //change this accordingly to the right one
 
 const subText = nc.subscribe(`${uhura_core_id}.receivedMessage.text`);
 (async () => {
