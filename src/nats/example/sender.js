@@ -2,16 +2,49 @@ import {
     connect, StringCodec
 } from "nats";
 import protobuf from 'protobufjs';
+import { networkInterfaces } from "os";
 const stringCodec = StringCodec();
-const nc = await connect({ servers: "nats://0.0.0.0:4222", encoding: 'binary' });
 
-let uhura_core_id = `SENDER` //change this accordingly to the right one
+let natServerAddress = "nats://0.0.0.0:4222"
+if (process.env.NATS_SERVER_ADDRESS) {
+    natServerAddress = process.env.NATS_SERVER_ADDRESS
+}
+console.log(`NATS_SERVER_ADDRESS env: ${natServerAddress}`);
+
+
+let id = "AlphaCore";
+if (process.env.ID) {
+    id = process.env.ID;
+}
+console.log(`ID env: ${id}`);
+
+
+const nc = await connect({ servers: natServerAddress, encoding: 'binary' });
+
+let uhura_core_id = id //change this accordingly to the right one
 
 // setInterval(() => {
 //     const messageText = `Hey! im using uhura!`
 //     console.log(`sending: ${messageText}`)
 //     nc.publish(`${uhura_core_id}.sendMessage.text`, stringCodec.encode(messageText));
 // }, 2000);
+
+
+
+
+let containerIp = '';
+
+for (const [name, interfaces] of Object.entries(networkInterfaces())) {
+  interfaces.forEach(iface => {
+    if (!iface.internal && iface.family === 'IPv4' && name === 'eth0') {
+      containerIp = iface.address;
+    }
+  });
+}
+
+console.log('Container IP:', containerIp);
+
+
 
 
 let Test;
@@ -22,7 +55,14 @@ await protobuf.load('./protos/test.proto').then((root) => {
 
 let testObject = Test.create();
 testObject.num = 17;
-testObject.payload = "Hello from a protobuff!!!"
+
+
+   // console.log(networkInterfaces())
+   testObject.payload = "Hello from a "+ containerIp
+
+
+
+
 
 setInterval(() => {
     console.log(`sending a protobuff: ${JSON.stringify(testObject)}`)
