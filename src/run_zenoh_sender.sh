@@ -1,0 +1,1 @@
+docker exec -it zenoh_pure python3 main/z_sender.py

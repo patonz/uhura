@@ -1,0 +1,1 @@
+docker build -t uhura-full -f uhura.Dockerfile .
