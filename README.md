@@ -73,3 +73,24 @@ Now, simply install Node.js and then run `npm init` inside the `src/nats/example
 Finally, run `node sender.js` and `node receiver.js`, or alternatively, use another NATS-client compatible approach.
 
 This is a very basic setup. From this, it is possible to customize Uhura using multiple adapters or even the Service Discovery system.
+
+# Zenoh pure
+
+
+To run the docker container.
+```
+# Since you have different ndocker network name, it could be replced, or just even =host
+./run_zenoh.sh
+```
+
+In new terminal, to run sender:
+```
+# this script attaches to the docker container which is already run, and run python script
+./run_zenoh_sender.sh
+```
+
+In new terminal, to run receiver:
+```
+# this script attaches to the docker container which is already run, and run python script
+./run_zenoh_receiverr.sh
+```
