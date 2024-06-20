@@ -64,6 +64,7 @@ RUN cargo build
 WORKDIR /app
 
 COPY supervisord.conf /etc/supervisord.conf
+# COPY zenoh_config.json5 /app/zenoh_config.json5
 
 # Add a startup script
 # COPY docker-entrypoint.sh /usr/local/bin/

@@ -1,0 +1,39 @@
+{
+  "mode": "peer",
+  "metadata": {
+    "name": "strawberry",
+    "location": "Penny Lane"
+  },
+  "scouting": {
+    "multicast": {
+      "enabled": true,
+      "address": "224.0.0.1:7447",
+      "interface": "auto",
+      "autoconnect": { "peer": "router|peer" },
+      "listen": true
+    }
+  },
+  "listen": {
+    "endpoints": [
+      "udp/224.0.0.1:7447"
+    ]
+  },
+  "connect": {
+    "endpoints": [
+      "udp/224.0.0.1:7447"
+    ]
+  },
+  "transport": {
+    "multicast": {
+      "qos": {
+        "enabled": false
+      },
+      "compression": {
+        "enabled": false
+      }
+    },
+    "link": {
+      "protocols": ["udp"]
+    }
+  }
+}
