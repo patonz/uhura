@@ -1,0 +1,5 @@
+module uhura {
+    struct AdapterData {
+        sequence<octet, 1024> data;  // Byte array for serialized protobuf (max 1024 bytes)
+    };
+};

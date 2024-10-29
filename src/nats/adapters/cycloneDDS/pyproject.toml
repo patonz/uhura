@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools", "wheel", "protobuf", "nats-py", "cyclonedds"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["your_python_module"]
+
+[tool.setuptools.scripts]
+uhura_cyclonedds_adapter = "src.main:main"  # Entry point to your `main.py` script
+
+[tool.setuptools.commands]
+# Run the build script during installation or packaging
+pre-build = ["python", "build.py"]
+
+[project]
+name = "uhura-cyclonedds-adapter"
+version = "0.1.0"
+description = "NATS and CycloneDDS adapter for Uhura middleware"
+authors = [{ name = "Patonz", email = "patonz91@gmail.com" }]
+dependencies = [
+    "protobuf>=3.20.0",
+    "nats-py",
+    "cyclonedds"
+]
