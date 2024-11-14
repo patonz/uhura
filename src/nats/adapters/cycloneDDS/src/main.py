@@ -20,7 +20,13 @@ from adapter_manager import AdapterManager
 
 from idl.dds_strctures import SendMessageDDS, NodeDDS, AdapterDDS, MessageDDS
 
+# Shared DomainParticipant instance
+participant = DomainParticipant()
 
+# Global DDS topic for SendMessageDDS on `adaptersNetwork`
+adapters_network_topic = Topic(participant, 'adaptersNetwork', SendMessageDDS)
+publisher = Publisher(participant)
+writer = DataWriter(publisher, adapters_network_topic)
 
 @dataclass
 class AdapterData(IdlStruct):
@@ -76,7 +82,7 @@ async def listen_on_nats_topic(nats_client, core_id, adapter_id):
         # Parse the message as a Protobuf object
         send_message = SendMessageRequest()
         send_message.ParseFromString(msg.data)
-        print(send_message)
+        # print(send_message)
         # Forward the Protobuf message to DDS
         await forward_to_dds(send_message)
 
@@ -112,37 +118,54 @@ async def forward_to_dds(send_message):
 
     print(f"Forwarding to DDS: {dds_message}")
 
-    partecipant = DomainParticipant()
-
-    SendMessageDDS.__idl__.fill_type_data()
-
-    topic = Topic(partecipant, 'adaptersNetwork', SendMessageDDS)
-    publisher = Publisher(partecipant)
-    writer = DataWriter(publisher, topic)
-
     writer.write(dds_message)
 
 class DDSToNats:
-    def __init__(self, dds_reader, nats_client, core_id):
-        self.reader = dds_reader
+    def __init__(self, nats_client, core_id):
+        # Access global topic directly
+        self.reader = DataReader(Subscriber(participant), adapters_network_topic)
         self.nats_client = nats_client
         self.core_id = core_id
 
     async def listen_and_forward(self):
         """Listen to DDS messages and forward them to NATS."""
-        print("Listening for DDS messages...")
+        print("Listening for DDS messages on adaptersNetwork...")
         while True:
             samples = list(self.reader.take_iter(timeout=duration(seconds=1)))
             if samples:
                 for sample in samples:
-                    serialized_message = bytes(sample.data)
+                    # Convert SendMessageDDS to SendMessageRequest (Protobuf)
+                    send_message_request = SendMessageRequest()
+
+                    # Map fields from SendMessageDDS to SendMessageRequest
+                    send_message_request.message.text = sample.message.content
+                    send_message_request.message.type = sample.message.message_type
+                    send_message_request.priority = sample.priority
+                    send_message_request.sender.id = sample.sender.id
+                    send_message_request.sender.adapterId = sample.sender.adapter_id
+
+                    send_message_request.source.id = sample.source.id
+                    send_message_request.source.name = sample.source.name
+                    send_message_request.source.type = sample.source.type
+                    send_message_request.source.link_status = sample.source.link_status
+
+                    # Map receivers (if there are any)
+                    for receiver in sample.receivers:
+                        node = send_message_request.receivers.add()
+                        node.id = receiver.id
+                        node.adapterId = receiver.adapter_id
+
+                    # Serialize the Protobuf message
+                    serialized_message = send_message_request.SerializeToString()
+
+                    # Send the serialized Protobuf message over NATS
                     await self.nats_client.publish(f"{self.core_id}.receivedMessage", serialized_message)
-                    print("Forwarded to NATS.")
+                    print("Forwarded to NATS:", send_message_request)
             await asyncio.sleep(0.1)
 
 async def main():
     # Load environment variables
-    nats_url = os.getenv("NATS_URL", "nats://localhost:4222")
+    nats_url = os.getenv("NATS_URL", "nats://localhost:4322")
     core_id = os.getenv("ID", "AlphaCore")
 
     # Connect to NATS
@@ -153,16 +176,8 @@ async def main():
     # Register the adapter
     await register_adapter(nats_client, core_id)
 
-    # Initialize DDS entities
-    participant = DomainParticipant()
-    topic = Topic(participant, 'AdapterTopic', AdapterData)
 
-    pub = Publisher(participant)
-
-    sub = Subscriber(participant)
-    reader = DataReader(sub, topic)
-
-    dds_to_nats = DDSToNats(reader, nats_client, core_id)
+    dds_to_nats = DDSToNats(nats_client, core_id)
 
 
 

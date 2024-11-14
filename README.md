@@ -49,13 +49,13 @@ Let's run them with the following commands:
 ##### For the Sender
 
 ```sh
-docker run -e "NATS_SERVER_ADDRESS=0.0.0.0:4222" -e "ID=SENDER" -e "NATS_CLUSTER_PORT=6222" -e "ROUTES=" -e "UHURA_CORE_ID=SENDER" -p 4222:4222 --network uhura-multicast-network --name sender_nats --rm uhura
+docker run -e "NATS_SERVER_ADDRESS=0.0.0.0:4222" -e "ID=SENDER" -e "NATS_CLUSTER_PORT=6222" -e "UHURA_CORE_ID=SENDER" -e "ADAPTERS=nats,zenoh" -p 4222:4222 --network uhura-multicast-network --name sender_nats --rm uhura -it
 ```
 
 ##### For the Receiver
 
 ```sh
-docker run -e "NATS_SERVER_ADDRESS=0.0.0.0:4222" -e "ID=RECEIVER" -e "NATS_CLUSTER_PORT=6222" -e "ROUTES=" -e "UHURA_CORE_ID=RECEIVER" -p 4222:4222 --network uhura-multicast-network --name receiver_nats --rm uhura
+docker run -e "NATS_SERVER_ADDRESS=0.0.0.0:4222" -e "ID=RECEIVER" -e "NATS_CLUSTER_PORT=6222" -e "ROUTES=" -e "UHURA_CORE_ID=RECEIVER" -e "ADAPTERS=nats,zenoh" -p 4222:4222 --network uhura-multicast-network --name receiver_nats --rm uhura -it
 
 ```
 
@@ -65,6 +65,7 @@ Where:
 - `NATS_CLUSTER_PORT` is needed to connect the cluster on the same network.
 - `ROUTES` is needed when we want to create a cluster, specifying an online server. The sender is our first server, so the receiver can connect to it. It is needed only for the startup for discovery purposes.
 - `UHURA_CORE_ID` Uhura has its own ID over the cluster, needed for clients and adapters.
+- `ADAPTERS` autodeploy a specific set of adapters, as default will start a nats adapter.
 
 Then, we need to expose the ports, forwarding port 4222 for each new Uhura instance, as well as the cluster port 6222.
 
@@ -73,3 +74,9 @@ Now, simply install Node.js and then run `npm init` inside the `src/nats/example
 Finally, run `node sender.js` and `node receiver.js`, or alternatively, use another NATS-client compatible approach.
 
 This is a very basic setup. From this, it is possible to customize Uhura using multiple adapters or even the Service Discovery system.
+
+## Advanced Deploy ~ Docker Compose
+Usually the basic `uhura.docker` file can cover a normal usage of the framework. 
+A more configurable option is to use the `docker-compose.yml` file where the nats server the core and the adapters can be listed there. In case of multiple uhura on the same machine for testing purpose, just add another core-adapter combination.
+
+
